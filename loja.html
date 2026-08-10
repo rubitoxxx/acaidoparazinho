@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Açaí do Parazinho — Painel da loja</title>
-<link rel="icon" href="/logoacai.png" type="image/png">
-<link rel="preload" href="/logoacai.png" as="image">
+<link rel="icon" href="logoacai.png" type="image/png">
+<link rel="preload" href="logoacai.png" as="image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -421,7 +421,7 @@
 <body class="travado">
 
 <div id="splash" aria-hidden="true">
-  <img class="splash-logo" src="/logoacai.png" alt="Açaí do Parazinho">
+  <img class="splash-logo" src="logoacai.png" alt="Açaí do Parazinho">
   <div class="splash-linha"></div>
 </div>
 
@@ -462,7 +462,7 @@
 </script>
 
 <header>
-  <div class="logo"><img src="/logoacai.png" alt="Açaí do Parazinho"><span class="logo-sub">— Loja</span></div>
+  <div class="logo"><img src="logoacai.png" alt="Açaí do Parazinho"><span class="logo-sub">— Loja</span></div>
   <div class="header-acoes">
     <a class="btn-ghost" href="/" style="text-decoration:none; display:inline-block;">🛍️ Área do cliente</a>
   </div>
@@ -711,9 +711,9 @@
   function obterIconeUrl(p){
     if(p && p.imagem) return p.imagem;
     const n = (p && p.nome ? p.nome : '').toLowerCase();
-    if(n.includes('farinha')) return '/icone-farinha.jpg';
-    if(n.includes('açaí') || n.includes('acai')) return '/icone-acai.jpg';
-    return (p && p.icone) ? p.icone : '/icone-acai.jpg';
+    if(n.includes('farinha')) return 'icone-farinha.jpg';
+    if(n.includes('açaí') || n.includes('acai')) return 'icone-acai.jpg';
+    return (p && p.icone) ? p.icone : 'icone-acai.jpg';
   }
 
   function renderizarIconeHTML(p){
