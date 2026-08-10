@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(uuid())
+  nome         String
+  email        String?       @unique
+  firebaseUid  String?       @unique
+  telefone     String?
+  senha_hash   String
+  tipo         String
+  enderecos    Endereco[]
+  reservas     Reserva[]
+  notificacoes Notificacao[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Endereco {
+  id         String   @id @default(uuid())
+  usuario    User     @relation(fields: [usuarioId], references: [id])
+  usuarioId  String
+  apelido    String
+  rua        String
+  numero     String
+  bairro     String
+  cidade     String?
+  estado     String?
+  cep        String?
+  referencia String?
+  principal  Boolean  @default(false)
+}
+
+model Categoria {
+  id       String    @id @default(uuid())
+  nome     String
+  ordem    Int       @default(0)
+  ativo    Boolean   @default(true)
+  produtos Produto[]
+}
+
+model Produto {
+  id            String                @id @default(uuid())
+  categoria     Categoria?            @relation(fields: [categoriaId], references: [id])
+  categoriaId   String?
+  nome          String
+  descricao     String?
+  preco         Float
+  imagem        String?
+  estoque       Int                   @default(0)
+  estoque_minimo Int                  @default(0)
+  ativo         Boolean               @default(true)
+  itens         ItensReserva[]
+  movimentacoes MovimentacaoEstoque[]
+}
+
+model Horario {
+  id        String  @id @default(uuid())
+  tipo      String  // 'retirada' | 'entrega'
+  hora      String
+  ativo     Boolean @default(true)
+  bloqueado Boolean @default(false)
+
+  @@unique([tipo, hora])
+}
+
+model Reserva {
+  id                String         @id @default(uuid())
+  codigo            String         @unique
+  usuario           User?          @relation(fields: [usuarioId], references: [id])
+  usuarioId         String?
+  nome              String
+  telefone          String
+  tipo              String
+  status            String         @default("pendente")
+  statusAnterior    String?
+  data              String
+  horario           String
+  endereco          String?
+  subtotal          Float?
+  taxaEntrega       Float?
+  total             Float
+  obs               String?
+  itens             ItensReserva[]
+  estoqueDescontado Boolean        @default(false)
+  criadoEm          DateTime       @default(now())
+  atualizadoEm      DateTime       @updatedAt
+
+  @@index([telefone])
+  @@index([status])
+}
+
+model ItensReserva {
+  id            String   @id @default(uuid())
+  reserva       Reserva  @relation(fields: [reservaId], references: [id])
+  reservaId     String
+  produto       Produto? @relation(fields: [produtoId], references: [id])
+  produtoId     String?
+  quantidade    Int
+  valorUnitario Float
+  subtotal      Float
+}
+
+model MovimentacaoEstoque {
+  id         String   @id @default(uuid())
+  produto    Produto  @relation(fields: [produtoId], references: [id])
+  produtoId  String
+  tipo       String
+  quantidade Int
+  motivo     String?
+  createdAt  DateTime @default(now())
+}
+
+model Notificacao {
+  id        String   @id @default(uuid())
+  usuario   User?    @relation(fields: [usuarioId], references: [id])
+  usuarioId String?
+  titulo    String
+  mensagem  String
+  lida      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Configuracao {
+  id    String @id @default(uuid())
+  chave String @unique
+  valor String
+}

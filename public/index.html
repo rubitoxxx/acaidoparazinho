@@ -1,0 +1,1903 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Açaí do Parazinho — Reserva sua entrega</title>
+<link rel="icon" href="/logoacai.png" type="image/png">
+<link rel="preload" href="/logoacai.png" as="image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script type="module" src="js/firebase-client.js"></script>
+<style>
+  :root{
+    --roxo-acai:#3B0A45; --roxo-fruta:#6B1F7A; --verde-mata:#1B4332;
+    --dourado:#E8A33D; --creme:#FDF6E9; --quase-preto:#180B1F;
+    --vermelho:#B04747; --radius:20px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--creme); color:var(--quase-preto); font-family:'Poppins',sans-serif; min-height:100vh; min-height:100dvh;}
+  h1,h2,h3,.display{font-family:'Fredoka',sans-serif; font-weight:700;}
+  button{font-family:'Poppins'; cursor:pointer;}
+  .oculto{display:none !important;}
+
+  header{
+    background:var(--roxo-acai); color:var(--creme); padding:18px 24px;
+    display:flex; align-items:center; justify-content:space-between;
+    position:sticky; top:0; z-index:40; border-bottom:3px solid var(--dourado); flex-wrap:wrap; gap:10px;
+  }
+  .logo{display:flex; align-items:center; gap:10px;}
+  .logo img{height:52px; width:auto; display:block; object-fit:contain;}
+  .header-acoes{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .saudacao{font-size:.85rem; color:#E9D9EE;}
+  .btn-ghost{
+    background:transparent; border:1px solid rgba(255,255,255,.4); color:var(--creme);
+    padding:8px 16px; border-radius:999px; font-size:.8rem; font-weight:600;
+  }
+  .btn-ghost:hover{background:rgba(255,255,255,.08);}
+
+  .hero{
+    background:linear-gradient(160deg, var(--roxo-acai), var(--roxo-fruta));
+    color:var(--creme); padding:50px 24px 60px; text-align:center;
+  }
+  .hero h1{font-size:clamp(1.8rem,4vw,2.6rem); margin-bottom:10px;}
+  .hero p{color:#E9D9EE; max-width:520px; margin:0 auto;}
+
+  main{max-width:900px; margin:-30px auto 60px; padding:0 20px; position:relative; z-index:5;}
+
+  .painel{
+    background:#fff; border-radius:var(--radius); padding:28px;
+    box-shadow:0 20px 45px rgba(59,10,69,.14); margin-bottom:26px;
+  }
+  .painel h2{color:var(--roxo-acai); font-size:1.25rem; margin-bottom:4px;}
+  .painel .sub{color:#8a7a8d; font-size:.85rem; margin-bottom:20px;}
+  .passo-tag{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:26px;height:26px;border-radius:50%; background:var(--roxo-acai); color:var(--creme);
+    font-size:.8rem; font-weight:700; margin-right:8px;
+  }
+
+  /* ---------- AUTENTICAÇÃO ---------- */
+  .auth-wrap{max-width:420px; margin:50px auto; padding:0 20px;}
+  .auth-tabs{display:flex; gap:8px; margin-bottom:18px; background:#f0e2d6; border-radius:999px; padding:5px;}
+  .auth-tab{
+    flex:1; border:none; background:transparent; padding:10px; border-radius:999px;
+    font-weight:700; font-size:.88rem; color:var(--roxo-acai);
+  }
+  .auth-tab.ativo{background:var(--roxo-acai); color:var(--creme);}
+  .auth-title{color:var(--roxo-acai); font-size:1.3rem; margin-bottom:6px; text-align:center;}
+  .auth-sub{color:#8a7a8d; font-size:.85rem; text-align:center; margin-bottom:20px;}
+
+  /* produtos */
+  .produtos-lista{display:flex; flex-direction:column; gap:14px;}
+  .produto-linha{
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    border:2px solid #f0e2d6; border-radius:16px; padding:14px 16px;
+  }
+  .produto-info{display:flex; align-items:center; gap:12px;}
+  .produto-icon{
+    width:50px;height:50px;border-radius:50%;
+    background:#fff; border:2px solid #e2d2c3;
+    display:flex;align-items:center;justify-content:center;font-size:1.2rem; flex-shrink:0; overflow:hidden;
+    box-shadow:0 2px 6px rgba(0,0,0,0.08);
+  }
+  .produto-nome{font-weight:600; color:var(--roxo-acai); font-size:.95rem;}
+  .produto-preco{font-size:.8rem; color:#8a7a8d;}
+  .produto-linha.esgotado{opacity:.55;}
+  .tag-esgotado{background:#fbe0e0; color:var(--vermelho); font-size:.68rem; font-weight:700; padding:2px 8px; border-radius:999px; margin-left:8px;}
+  .aviso-horario{border:2px dashed #eee0d4; border-radius:14px; padding:16px; text-align:center; color:#8a7a8d; font-size:.88rem;}
+  .qtd-controle{display:flex; align-items:center; border:2px solid #eee0d4; border-radius:999px; overflow:hidden;}
+  .qtd-controle button{background:var(--creme); border:none; width:32px; height:32px; font-size:1.05rem; color:var(--roxo-acai); font-weight:700;}
+  .qtd-controle button:hover{background:#f0e2d6;}
+  .qtd-controle span{width:28px; text-align:center; font-weight:600; font-size:.9rem;}
+
+  /* datas */
+  .dias-linha{display:flex; gap:10px; overflow-x:auto; padding-bottom:6px;}
+  .dia-pill{
+    flex-shrink:0; border:2px solid #eee0d4; border-radius:14px; padding:10px 14px;
+    text-align:center; min-width:64px; background:#fff; transition:.2s ease;
+  }
+  .dia-pill .dsem{font-size:.7rem; color:#8a7a8d; text-transform:uppercase; font-weight:600;}
+  .dia-pill .dnum{font-family:'Fredoka'; font-size:1.1rem; color:var(--roxo-acai);}
+  .dia-pill.ativo{background:var(--roxo-acai); border-color:var(--roxo-acai);}
+  .dia-pill.ativo .dsem, .dia-pill.ativo .dnum{color:var(--creme);}
+
+  .horarios-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; margin-top:14px;}
+  .horario-btn{
+    border:2px solid #eee0d4; background:#fff; border-radius:12px; padding:10px 8px;
+    font-size:.83rem; font-weight:600; color:var(--roxo-acai); text-align:center;
+  }
+  .horario-btn.ativo{background:var(--verde-mata); border-color:var(--verde-mata); color:var(--creme);}
+  .horario-btn.cheio{opacity:.4; cursor:not-allowed; text-decoration:line-through;}
+  .horario-btn small{display:block; font-weight:400; font-size:.7rem; opacity:.8;}
+
+  .tipo-toggle{display:flex; gap:10px; margin-bottom:16px;}
+  .tipo-btn{
+    flex:1; border:2px solid #eee0d4; background:#fff; border-radius:14px; padding:14px 10px;
+    text-align:center; font-weight:700; font-size:.88rem; color:var(--roxo-acai);
+  }
+  .tipo-btn small{display:block; font-weight:400; font-size:.72rem; color:#8a7a8d; margin-top:2px;}
+  .tipo-btn.ativo{background:var(--roxo-acai); border-color:var(--roxo-acai); color:var(--creme);}
+  .tipo-btn.ativo small{color:#E9D9EE;}
+
+  /* endereço na reserva */
+  .endereco-select-linha{display:flex; gap:10px; align-items:stretch; margin-bottom:6px;}
+  .endereco-select-linha select{
+    flex:1; border:2px solid #eee0d4; border-radius:12px; padding:11px 14px; background:var(--creme);
+    font-family:'Poppins'; font-size:.9rem; color:var(--quase-preto);
+  }
+  .btn-gerenciar{
+    background:var(--creme); border:2px solid var(--roxo-fruta); color:var(--roxo-fruta);
+    border-radius:12px; padding:0 14px; font-weight:700; font-size:.8rem; white-space:nowrap;
+  }
+  .sem-endereco{
+    border:2px dashed #eee0d4; border-radius:14px; padding:18px; text-align:center; color:#8a7a8d; font-size:.88rem;
+  }
+
+  /* dados */
+  .campo{margin-bottom:14px;}
+  .campo label{display:block; font-size:.82rem; font-weight:600; color:var(--roxo-acai); margin-bottom:6px;}
+  .campo input, .campo textarea, .campo select{
+    width:100%; border:2px solid #eee0d4; border-radius:12px; padding:11px 14px;
+    font-family:'Poppins'; font-size:.92rem; background:var(--creme);
+  }
+  .campo input:focus, .campo textarea:focus, .campo select:focus{outline:2px solid var(--roxo-fruta); border-color:transparent;}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .campo-check{display:flex; align-items:center; gap:8px; font-size:.85rem; color:var(--roxo-acai); font-weight:600;}
+  .campo-check input{width:auto;}
+
+  .conta-info{
+    display:flex; justify-content:space-between; align-items:center;
+    border:2px solid #f0e2d6; border-radius:14px; padding:14px 16px; margin-bottom:18px; font-size:.88rem; color:#5b4a5f;
+  }
+
+  /* resumo */
+  .resumo-linha{display:flex; justify-content:space-between; font-size:.88rem; padding:6px 0; color:#5b4a5f;}
+  .resumo-total{
+    display:flex; justify-content:space-between; font-family:'Fredoka'; font-size:1.25rem;
+    color:var(--roxo-acai); border-top:2px dashed #eee0d4; margin-top:8px; padding-top:12px;
+  }
+  .msg-erro{color:var(--vermelho); font-size:.85rem; margin-top:10px; font-weight:600;}
+  .msg-ok{color:var(--verde-mata); font-size:.85rem; margin-top:10px; font-weight:600;}
+
+  .btn-confirmar, .btn-auth{
+    width:100%; background:var(--dourado); color:var(--quase-preto); border:none;
+    padding:15px; border-radius:999px; font-weight:700; font-size:.95rem; margin-top:16px;
+    box-shadow:0 8px 20px rgba(232,163,61,.28); transition:transform .2s ease;
+  }
+  .btn-confirmar:hover, .btn-auth:hover{transform:translateY(-2px);}
+  .btn-confirmar:disabled{opacity:.5; cursor:not-allowed; transform:none;}
+
+  /* ticket confirmação */
+  .ticket{
+    background:var(--roxo-acai); color:var(--creme); border-radius:var(--radius);
+    padding:30px; position:relative; overflow:hidden; text-align:center;
+  }
+  .ticket .furo{
+    position:absolute; width:28px; height:28px; background:var(--creme); border-radius:50%; top:50%; transform:translateY(-50%);
+  }
+  .ticket .furo.esq{left:-14px;} .ticket .furo.dir{right:-14px;}
+  .ticket .linha-pontilhada{border-top:2px dashed rgba(255,255,255,.3); margin:18px 0;}
+  .ticket .codigo{font-family:'Fredoka'; font-size:1.8rem; letter-spacing:2px; color:var(--dourado); margin:8px 0;}
+  .ticket .status-badge{
+    display:inline-block; background:rgba(232,163,61,.18); border:1px solid var(--dourado);
+    color:var(--dourado); padding:5px 14px; border-radius:999px; font-size:.78rem; font-weight:700; margin-bottom:14px;
+  }
+  .ticket .item-tk{display:flex; justify-content:space-between; font-size:.9rem; padding:4px 0; color:#E9D9EE;}
+  .btn-nova{
+    background:transparent; border:2px solid var(--creme); color:var(--creme);
+    padding:11px 22px; border-radius:999px; font-weight:600; margin-top:18px;
+  }
+  .btn-zap-confirma{
+    background:var(--verde-mata); color:var(--creme); border:none; padding:12px 20px;
+    border-radius:999px; font-weight:700; margin-top:10px; width:100%;
+  }
+
+  /* modais */
+  .modal-fundo{
+    position:fixed; top:0; left:0; width:100vw; height:100vh;
+    background:rgba(24,11,31,.88); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    display:flex; align-items:center; justify-content:center;
+    z-index:9999; padding:20px; overflow-y:auto;
+  }
+  .modal-caixa{
+    background:#fff; border-radius:var(--radius); padding:32px 28px; max-width:380px; width:100%; text-align:center;
+    box-shadow:0 25px 60px rgba(0,0,0,.4); border:1px solid rgba(232,163,61,.3); margin:auto; position:relative;
+  }
+  .modal-caixa.largo{max-width:460px; text-align:left;}
+  .modal-caixa h3{color:var(--roxo-acai); margin-bottom:14px; text-align:center;}
+  .modal-caixa input{
+    width:100%; border:2px solid #eee0d4; border-radius:12px; padding:12px; text-align:center;
+    font-size:1.3rem; letter-spacing:6px; margin-bottom:12px; font-family:'Fredoka';
+  }
+  .modal-btns{display:flex; gap:10px;}
+  .modal-btns button{flex:1; border:none; border-radius:999px; padding:11px; font-weight:700;}
+  .btn-entrar{background:var(--roxo-acai); color:var(--creme);}
+  .btn-cancelar-modal{background:#f0e2d6; color:var(--roxo-acai);}
+  .modal-fechar-x{
+    position:absolute; top:16px; right:20px; background:none; border:none; font-size:1.2rem; color:var(--roxo-acai); font-weight:700;
+  }
+  .endereco-item{
+    border:2px solid #f0e2d6; border-radius:14px; padding:14px 16px; margin-bottom:10px;
+    display:flex; justify-content:space-between; align-items:flex-start; gap:10px;
+  }
+  .endereco-item h5{color:var(--roxo-acai); font-size:.95rem; margin-bottom:3px;}
+  .endereco-item p{font-size:.82rem; color:#5b4a5f; line-height:1.4;}
+  .endereco-acoes{display:flex; flex-direction:column; gap:6px; align-items:flex-end;}
+  .endereco-acoes button{border:none; background:none; font-size:.76rem; font-weight:700; color:var(--roxo-fruta);}
+  .endereco-acoes .excluir{color:var(--vermelho);}
+  .tag-principal{background:#dcefe1; color:var(--verde-mata); font-size:.68rem; font-weight:700; padding:2px 8px; border-radius:999px;}
+  .btn-add-endereco{
+    width:100%; border:2px dashed var(--roxo-fruta); background:none; color:var(--roxo-fruta);
+    padding:12px; border-radius:14px; font-weight:700; font-size:.88rem; margin-top:6px;
+  }
+
+  /* ---------- abas do cliente (nova reserva / minhas reservas) ---------- */
+  .cliente-tabs{display:flex; gap:8px; margin-bottom:20px; background:#f0e2d6; border-radius:999px; padding:5px; max-width:420px;}
+  .cliente-tab{
+    flex:1; border:none; background:transparent; padding:10px; border-radius:999px;
+    font-weight:700; font-size:.85rem; color:var(--roxo-acai);
+  }
+  .cliente-tab.ativo{background:var(--roxo-acai); color:var(--creme);}
+
+  .minhas-topo{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;}
+  .minhas-stats{display:flex; gap:10px; flex-wrap:wrap;}
+  .btn-atualizar{
+    background:var(--creme); border:2px solid var(--roxo-fruta); color:var(--roxo-fruta);
+    padding:9px 16px; border-radius:999px; font-weight:700; font-size:.8rem;
+  }
+  .btn-atualizar:hover{background:#f0e2d6;}
+
+  .reserva-cliente-card{border:2px solid #f0e2d6; border-radius:16px; padding:16px 18px; margin-bottom:12px;}
+  .reserva-cliente-topo{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;}
+  .reserva-cliente-topo h4{color:var(--roxo-acai); font-size:1rem;}
+  .reserva-cliente-topo .meta{font-size:.78rem; color:#8a7a8d; margin-top:2px;}
+  .reserva-cliente-itens{font-size:.85rem; color:#5b4a5f; margin:10px 0;}
+  .reserva-cliente-acoes{display:flex; gap:8px; flex-wrap:wrap; margin-top:4px;}
+  .reserva-cliente-acoes button{border:none; border-radius:999px; padding:7px 14px; font-size:.78rem; font-weight:700;}
+  .b-ver-detalhe{background:#eee0f2; color:var(--roxo-fruta);}
+  .b-cancelar-cliente{background:#fbe0e0; color:var(--vermelho);}
+  .tag-hoje{background:#dcefe1; color:var(--verde-mata); font-size:.68rem; font-weight:700; padding:2px 8px; border-radius:999px; margin-left:6px;}
+  .vazio-lista{text-align:center; color:#8a7a8d; padding:36px 10px; font-size:.9rem;}
+  .vazio-lista .emoji-vazio{font-size:2.2rem; display:block; margin-bottom:10px;}
+
+  /* toggle mostrar senha */
+  .campo-senha-wrap{position:relative;}
+  .campo-senha-wrap input{padding-right:44px;}
+  .btn-olho{
+    position:absolute; right:6px; top:50%; transform:translateY(-50%);
+    background:none; border:none; font-size:1rem; padding:6px; color:#8a7a8d;
+  }
+
+  /* admin: filtros */
+  .admin-filtros{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;}
+  .admin-filtros input, .admin-filtros select{
+    border:2px solid #eee0d4; border-radius:12px; padding:9px 12px; font-family:'Poppins'; font-size:.85rem; background:var(--creme);
+  }
+  .admin-filtros input{flex:1; min-width:180px;}
+
+  /* admin */
+  .admin-topo{display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:10px;}
+  .admin-stats{display:flex; gap:10px; flex-wrap:wrap;}
+  .stat-card{background:var(--creme); border-radius:12px; padding:10px 16px; text-align:center; min-width:90px;}
+  .stat-card .n{font-family:'Fredoka'; font-size:1.3rem; color:var(--roxo-acai);}
+  .stat-card .l{font-size:.7rem; color:#8a7a8d;}
+  .reserva-card{border:2px solid #f0e2d6; border-radius:16px; padding:16px 18px; margin-bottom:12px;}
+  .reserva-topo{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;}
+  .reserva-topo h4{color:var(--roxo-acai); font-size:1rem;}
+  .reserva-topo .meta{font-size:.78rem; color:#8a7a8d;}
+  .badge{padding:4px 10px; border-radius:999px; font-size:.72rem; font-weight:700;}
+  .badge-pendente{background:#fdf0da; color:#a36c0a;}
+  .badge-confirmada{background:#dcefe1; color:var(--verde-mata);}
+  .badge-em_preparo{background:#eee0f2; color:var(--roxo-fruta);}
+  .badge-pronta_retirada, .badge-saiu_entrega{background:#dcefe1; color:var(--verde-mata);}
+  .badge-concluida{background:#e3dcef; color:var(--roxo-fruta);}
+  .badge-solicitacao_cancelamento{background:#fbe0e0; color:var(--vermelho);}
+  .badge-cancelada{background:#fbe0e0; color:var(--vermelho);}
+  .reserva-itens{font-size:.85rem; color:#5b4a5f; margin:10px 0;}
+  .reserva-acoes{display:flex; gap:8px; flex-wrap:wrap;}
+  .reserva-acoes button{border:none; border-radius:999px; padding:7px 14px; font-size:.78rem; font-weight:700; color:#fff;}
+  .b-confirmar{background:var(--verde-mata);}
+  .b-concluir{background:var(--roxo-fruta);}
+  .b-cancelar{background:var(--vermelho);}
+  .b-excluir{background:#8a7a8d;}
+  .vazio-admin{text-align:center; color:#8a7a8d; padding:30px 0; font-size:.9rem;}
+  .carregando{text-align:center; color:#8a7a8d; padding:20px 0; font-size:.85rem;}
+
+  @media (max-width:600px){
+    .grid2{grid-template-columns:1fr;}
+    .admin-topo{flex-direction:column; align-items:flex-start;}
+    .endereco-select-linha{flex-direction:column;}
+  }
+
+  /* ---------- SPLASH / ANIMAÇÃO DE ABERTURA ---------- */
+  html{background:var(--quase-preto);}
+  body.travado{overflow:hidden; height:100vh;}
+
+  #splash{
+    position:fixed; inset:0; z-index:9999;
+    background:var(--quase-preto);
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column;
+  }
+  #splash .splash-logo{
+    width:min(300px, 78vw); height:auto; display:block; object-fit:contain;
+    opacity:0; transform:scale(.4);
+    animation:splashPop .7s cubic-bezier(.2,1.6,.4,1) .15s forwards;
+    filter:drop-shadow(0 12px 32px rgba(0,0,0,.45));
+  }
+  #splash .splash-linha{
+    margin-top:22px; width:120px; height:3px; border-radius:999px;
+    background:rgba(255,255,255,.12); overflow:hidden; position:relative;
+    opacity:0; animation:splashTexto .5s ease .7s forwards;
+  }
+  #splash .splash-linha::after{
+    content:''; position:absolute; inset:0; width:40%; border-radius:999px;
+    background:linear-gradient(90deg, var(--dourado), var(--roxo-fruta));
+    animation:splashBarra 1.1s ease-in-out .9s infinite;
+  }
+
+  @keyframes splashPop{
+    0%{opacity:0; transform:scale(.4);}
+    60%{opacity:1; transform:scale(1.08);}
+    100%{opacity:1; transform:scale(1); box-shadow:0 0 0 18px rgba(232,163,61,0);}
+  }
+  @keyframes splashTexto{
+    to{opacity:1; transform:translateY(0);}
+  }
+  @keyframes splashBarra{
+    0%{left:-40%;}
+    100%{left:100%;}
+  }
+
+  #splash.saindo{
+    animation:splashSai .7s cubic-bezier(.6,0,.3,1) forwards;
+  }
+  @keyframes splashSai{
+    0%{clip-path:inset(0 0 0 0); opacity:1;}
+    100%{clip-path:inset(0 0 100% 0); opacity:1;}
+  }
+
+  #envoltorio-site{
+    opacity:0; transform:translateY(14px);
+  }
+  #envoltorio-site.revelado{
+    animation:siteRevela .7s ease forwards;
+  }
+  @keyframes siteRevela{
+    to{opacity:1; transform:translateY(0);}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    #splash, #splash *, #envoltorio-site{animation:none !important;}
+    #splash{display:none !important;}
+    #envoltorio-site{opacity:1; transform:none;}
+  }
+
+  /* Google Auth & Divider */
+  .btn-google{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    width:100%; padding:12px 16px; border-radius:12px;
+    background:#ffffff; color:#3c4043; border:1.5px solid #dadce0;
+    font-family:'Poppins', sans-serif; font-weight:600; font-size:.95rem;
+    cursor:pointer; transition:all .2s ease; margin-bottom:14px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.08);
+  }
+  .btn-google:hover{
+    background:#f8f9fa; border-color:#d2e3fc; transform:translateY(-1px);
+    box-shadow:0 2px 6px rgba(60,64,67,0.15);
+  }
+  .btn-google svg{width:18px; height:18px; flex-shrink:0;}
+
+  .auth-divisor{
+    display:flex; align-items:center; margin:16px 0; color:#8a7a8d; font-size:.8rem; font-family:'Poppins', sans-serif;
+  }
+  .auth-divisor::before, .auth-divisor::after{
+    content:''; flex:1; height:1px; background:#e2d2c3;
+  }
+  .auth-divisor span{padding:0 10px;}
+
+  .link-auth{
+    display:inline-block; margin-top:10px; color:var(--roxo-acai); font-size:.85rem; text-decoration:none; font-weight:600; cursor:pointer;
+  }
+  .link-auth:hover{text-decoration:underline;}
+
+  /* Box de Confirmação de Email */
+  .box-verificacao{
+    text-align:center; padding:10px 5px;
+  }
+  .box-verificacao-icone{
+    font-size:3rem; margin-bottom:12px; display:block;
+  }
+  .btn-secundario-auth{
+    background:transparent; border:1.5px solid var(--roxo-acai); color:var(--roxo-acai);
+    width:100%; padding:12px; border-radius:12px; font-weight:700; font-size:.95rem;
+    cursor:pointer; transition:all .2s; margin-top:10px;
+  }
+  .btn-secundario-auth:hover{
+    background:#f0e2d6;
+  }
+  .msg-sucesso{
+    background:#dcefe1; color:var(--verde-mata); border-radius:10px; padding:10px 14px; font-size:.85rem; font-weight:600; margin-bottom:12px; text-align:center;
+  }
+</style>
+</head>
+<body class="travado">
+
+<div id="splash" aria-hidden="true">
+  <img class="splash-logo" src="/logoacai.png" alt="Açaí do Parazinho">
+  <div class="splash-linha"></div>
+</div>
+
+<div id="envoltorio-site"></div>
+<script>
+  document.addEventListener('DOMContentLoaded', function(){
+    var envoltorio = document.getElementById('envoltorio-site');
+    var splash = document.getElementById('splash');
+    var no = document.body.firstChild;
+    while(no){
+      var proximo = no.nextSibling;
+      if(no !== splash && no !== envoltorio){
+        envoltorio.appendChild(no);
+      }
+      no = proximo;
+    }
+    iniciarRevelacao();
+  });
+
+  function iniciarRevelacao(){
+    var envoltorio = document.getElementById('envoltorio-site');
+    var splash = document.getElementById('splash');
+
+    function abrirSite(){
+      document.body.classList.remove('travado');
+      splash.classList.add('saindo');
+      envoltorio.classList.add('revelado');
+      setTimeout(function(){ splash.remove(); envoltorio.style.transform = 'none'; }, 750);
+    }
+
+    var pronto = false;
+    window.addEventListener('load', function(){ pronto = true; });
+    setTimeout(function(){
+      if(document.readyState === 'complete' || pronto){ abrirSite(); }
+      else{ window.addEventListener('load', abrirSite, { once:true }); }
+    }, 1100);
+  }
+</script>
+
+<header>
+  <div class="logo"><img src="/logoacai.png" alt="Açaí do Parazinho"></div>
+  <div class="header-acoes">
+    <span class="saudacao oculto" id="saudacao"></span>
+    <button class="btn-ghost oculto" id="btn-meus-enderecos" onclick="abrirEnderecos()">📍 Meus endereços</button>
+    <button class="btn-ghost oculto" id="btn-alterar-senha" onclick="abrirModalAlterarSenha()">🔒 Alterar senha</button>
+    <button class="btn-ghost oculto" id="btn-sair" onclick="sair()">Sair</button>
+    <button class="btn-ghost oculto" id="btn-nav-minhas-reservas" onclick="mostrarPainelCliente('minhas')">📋 Minhas reservas</button>
+  </div>
+</header>
+
+<!-- ================= AUTENTICAÇÃO ================= -->
+<div class="auth-wrap" id="area-auth">
+  <div class="painel">
+    <div class="auth-tabs" id="auth-tabs-bar">
+      <button class="auth-tab ativo" id="tab-login" onclick="mostrarAba('login')">Entrar</button>
+      <button class="auth-tab" id="tab-cadastro" onclick="mostrarAba('cadastro')">Criar conta</button>
+    </div>
+
+    <!-- LOGIN -->
+    <form id="form-login" onsubmit="event.preventDefault(); fazerLogin();">
+      <h3 class="auth-title">Que bom te ver de novo!</h3>
+      <p class="auth-sub">Entre com sua conta Google ou e-mail.</p>
+
+      <button type="button" class="btn-google" onclick="fazerLoginGoogle()">
+        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+        Continuar com o Google
+      </button>
+
+      <div class="auth-divisor"><span>ou acesse com e-mail</span></div>
+
+      <div class="campo">
+        <label for="login-email">E-mail</label>
+        <input type="email" id="login-email" placeholder="seuemail@exemplo.com" autocomplete="username email" required>
+      </div>
+      <div class="campo">
+        <label for="login-senha">Senha</label>
+        <div class="campo-senha-wrap">
+          <input type="password" id="login-senha" placeholder="Sua senha" autocomplete="current-password" required>
+          <button type="button" class="btn-olho" onclick="alternarSenha('login-senha', this)">👁️</button>
+        </div>
+      </div>
+      <div style="text-align:right; margin-bottom:12px;">
+        <a href="javascript:void(0)" class="link-auth" onclick="mostrarAba('esqueci')">Esqueci minha senha</a>
+      </div>
+      <p class="msg-erro oculto" id="login-erro"></p>
+      <button type="submit" class="btn-auth" id="btn-login-submit">Entrar</button>
+    </form>
+
+    <!-- CADASTRO -->
+    <form id="form-cadastro" class="oculto" onsubmit="event.preventDefault(); criarConta();">
+      <h3 class="auth-title">Vamos criar sua conta</h3>
+      <p class="auth-sub">Rápido e fácil.</p>
+
+      <button type="button" class="btn-google" onclick="fazerLoginGoogle()">
+        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+        Cadastrar com o Google
+      </button>
+
+      <div class="auth-divisor"><span>ou cadastre com e-mail</span></div>
+
+      <div class="campo">
+        <label for="cad-nome">Nome completo</label>
+        <input type="text" id="cad-nome" placeholder="Seu nome" autocomplete="name" required>
+      </div>
+      <div class="campo">
+        <label for="cad-email">E-mail</label>
+        <input type="email" id="cad-email" placeholder="seuemail@exemplo.com" autocomplete="email" required>
+      </div>
+      <div class="campo">
+        <label for="cad-telefone">Telefone (opcional)</label>
+        <input type="tel" id="cad-telefone" placeholder="(00) 00000-0000" autocomplete="tel" oninput="aplicarMascaraTelefone(this)">
+      </div>
+      <div class="campo">
+        <label for="cad-senha">Senha</label>
+        <div class="campo-senha-wrap">
+          <input type="password" id="cad-senha" placeholder="Mínimo de 8 caracteres" autocomplete="new-password" required>
+          <button type="button" class="btn-olho" onclick="alternarSenha('cad-senha', this)">👁️</button>
+        </div>
+      </div>
+      <div class="campo">
+        <label for="cad-senha2">Confirmar senha</label>
+        <div class="campo-senha-wrap">
+          <input type="password" id="cad-senha2" placeholder="Repita a senha" autocomplete="new-password" required>
+          <button type="button" class="btn-olho" onclick="alternarSenha('cad-senha2', this)">👁️</button>
+        </div>
+      </div>
+      <p class="msg-erro oculto" id="cadastro-erro"></p>
+      <button type="submit" class="btn-auth" id="btn-cadastro-submit">Criar conta</button>
+    </form>
+
+    <!-- ESQUECI A SENHA -->
+    <form id="form-esqueci" class="oculto" onsubmit="event.preventDefault(); solicitarRecuperacaoSenha();">
+      <h3 class="auth-title">Esqueci minha senha</h3>
+      <p class="auth-sub">Digite seu e-mail para receber o link de recuperação.</p>
+      <div class="campo">
+        <label for="esqueci-email">E-mail</label>
+        <input type="email" id="esqueci-email" placeholder="seuemail@exemplo.com" autocomplete="email" required>
+      </div>
+      <p class="msg-sucesso oculto" id="esqueci-sucesso"></p>
+      <p class="msg-erro oculto" id="esqueci-erro"></p>
+      <button type="submit" class="btn-auth" id="btn-esqueci-submit">Enviar link de recuperação</button>
+      <div style="text-align:center; margin-top:14px;">
+        <a href="javascript:void(0)" class="link-auth" onclick="mostrarAba('login')">← Voltar para login</a>
+      </div>
+    </form>
+
+    <!-- VERIFICAR E-MAIL -->
+    <div id="form-verificar-email" class="oculto">
+      <div class="box-verificacao">
+        <span class="box-verificacao-icone">📩</span>
+        <h3 class="auth-title">Verifique seu e-mail</h3>
+        <p class="auth-sub" style="margin-bottom:12px;">Enviamos um link de confirmação para:</p>
+        <p style="font-weight:700; color:var(--roxo-acai); margin-bottom:16px; word-break:break-all;" id="verificar-email-destino">—</p>
+        <p style="font-size:.85rem; color:#6b5a6f; margin-bottom:20px;">Confirme seu e-mail para ter acesso completo às reservas do Açaí do Parazinho.</p>
+        
+        <p class="msg-sucesso oculto" id="verificacao-sucesso"></p>
+        <p class="msg-erro oculto" id="verificacao-erro"></p>
+
+        <button class="btn-auth" onclick="jáConfirmeiEmail()">Já confirmei meu e-mail</button>
+        <button class="btn-secundario-auth" onclick="reenviarEmailConfirmação()">Reenviar e-mail de confirmação</button>
+        <div style="text-align:center; margin-top:16px;">
+          <a href="javascript:void(0)" class="link-auth" onclick="sair()">← Voltar para o login</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL ALTERAR SENHA -->
+<div class="modal-overlay oculto" id="modal-alterar-senha">
+  <div class="modal-card" style="max-width:420px;">
+    <div class="modal-header">
+      <h3 style="margin:0; font-family:'Fredoka'; color:var(--roxo-acai);" id="titulo-modal-alterar-senha">🔒 Alterar Senha</h3>
+      <button class="btn-fechar" onclick="fecharModalAlterarSenha()">✕</button>
+    </div>
+    <form style="padding:16px 0;" onsubmit="event.preventDefault(); confirmarAlterarSenha();">
+      <input type="text" name="username" autocomplete="username" style="display:none;" aria-hidden="true">
+      <div class="campo" id="campo-senha-atual-wrap">
+        <label for="alt-senha-atual">Senha Atual</label>
+        <div class="campo-senha-wrap">
+          <input type="password" id="alt-senha-atual" placeholder="Sua senha atual" autocomplete="current-password">
+          <button type="button" class="btn-olho" onclick="alternarSenha('alt-senha-atual', this)">👁️</button>
+        </div>
+      </div>
+      <div class="campo">
+        <label for="alt-senha-nova">Nova Senha</label>
+        <div class="campo-senha-wrap">
+          <input type="password" id="alt-senha-nova" placeholder="Mínimo de 8 caracteres" autocomplete="new-password" required>
+          <button type="button" class="btn-olho" onclick="alternarSenha('alt-senha-nova', this)">👁️</button>
+        </div>
+      </div>
+      <div class="campo">
+        <label for="alt-senha-confirmar">Confirmar Nova Senha</label>
+        <div class="campo-senha-wrap">
+          <input type="password" id="alt-senha-confirmar" placeholder="Repita a nova senha" autocomplete="new-password" required>
+          <button type="button" class="btn-olho" onclick="alternarSenha('alt-senha-confirmar', this)">👁️</button>
+        </div>
+      </div>
+      <p class="msg-sucesso oculto" id="alt-senha-sucesso"></p>
+      <p class="msg-erro oculto" id="alt-senha-erro"></p>
+      <button type="submit" class="btn-auth" id="btn-alt-senha-submit">Alterar Senha</button>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL DEFINIR SENHA APÓS LOGIN GOOGLE -->
+<div class="modal-overlay oculto" id="modal-definir-senha-google">
+  <div class="modal-card" style="max-width:420px;">
+    <div class="modal-header">
+      <h3 style="margin:0; font-family:'Fredoka'; color:var(--roxo-acai);">🔑 Escolha sua Senha (Opcional)</h3>
+      <button class="btn-fechar" onclick="fecharModalDefinirSenhaGoogle()">✕</button>
+    </div>
+    <form style="padding:16px 0;" onsubmit="event.preventDefault(); salvarSenhaGoogle();">
+      <input type="text" name="username" autocomplete="username" style="display:none;" aria-hidden="true">
+      <p style="font-size:0.9rem; color:#6b5a6f; margin-bottom:16px; line-height:1.4;">
+        Seu e-mail foi autenticado com sucesso pelo Google! Se desejar, defina uma senha abaixo para também conseguir entrar digitando seu e-mail e senha no futuro.
+      </p>
+      <div class="campo">
+        <label for="google-senha-nova">Sua Senha</label>
+        <div class="campo-senha-wrap">
+          <input type="password" id="google-senha-nova" placeholder="Mínimo de 8 caracteres" autocomplete="new-password" required>
+          <button type="button" class="btn-olho" onclick="alternarSenha('google-senha-nova', this)">👁️</button>
+        </div>
+      </div>
+      <div class="campo">
+        <label for="google-senha-confirmar">Confirmar Senha</label>
+        <div class="campo-senha-wrap">
+          <input type="password" id="google-senha-confirmar" placeholder="Repita a senha" autocomplete="new-password" required>
+          <button type="button" class="btn-olho" onclick="alternarSenha('google-senha-confirmar', this)">👁️</button>
+        </div>
+      </div>
+      <p class="msg-sucesso oculto" id="google-senha-sucesso"></p>
+      <p class="msg-erro oculto" id="google-senha-erro"></p>
+      <button type="submit" class="btn-auth" id="btn-google-senha-submit" style="margin-bottom:8px;">Salvar Senha</button>
+      <button type="button" class="btn-secundario-auth" onclick="fecharModalDefinirSenhaGoogle()">Pular por enquanto</button>
+    </form>
+  </div>
+</div>
+
+<!-- ================= ÁREA LOGADA ================= -->
+<div class="oculto" id="area-app">
+
+  <section class="hero">
+    <h1>Reserve sua entrega</h1>
+    <p>Escolha os produtos, o dia e o horário — a gente leva até você.</p>
+  </section>
+
+  <main>
+
+    <div class="cliente-tabs">
+      <button class="cliente-tab ativo" id="tab-cliente-nova" onclick="mostrarPainelCliente('nova')">Fazer reserva</button>
+      <button class="cliente-tab" id="tab-cliente-minhas" onclick="mostrarPainelCliente('minhas')">Minhas reservas</button>
+    </div>
+
+    <div id="painel-cliente-nova">
+
+    <div id="area-reserva">
+
+      <div class="painel">
+        <h2><span class="passo-tag">1</span>Escolha os produtos</h2>
+        <p class="sub">Selecione a quantidade de cada item.</p>
+        <div class="produtos-lista" id="lista-produtos"></div>
+      </div>
+
+      <div class="painel">
+        <h2><span class="passo-tag">2</span>Retirada ou entrega?</h2>
+        <div class="tipo-toggle" id="tipo-toggle">
+          <button class="tipo-btn" id="btn-tipo-retirada" onclick="selecionarTipo('retirada')">
+            🏪 Retirar na loja<small>Você busca no local</small>
+          </button>
+          <button class="tipo-btn" id="btn-tipo-entrega" onclick="selecionarTipo('entrega')">
+            🛵 Entrega<small>Levamos até você</small>
+          </button>
+        </div>
+
+        <div class="oculto" id="bloco-endereco-reserva">
+          <div class="endereco-select-linha">
+            <select id="select-endereco" onchange="renderResumo()"></select>
+            <button class="btn-gerenciar" onclick="abrirEnderecos()">Gerenciar</button>
+          </div>
+        </div>
+
+        <h2 style="margin-top:20px;"><span class="passo-tag">3</span><span id="titulo-horario">Dia e horário</span></h2>
+        <p class="sub">Vagas limitadas por horário.</p>
+        <div class="dias-linha" id="lista-dias"></div>
+        <div class="horarios-grid" id="lista-horarios"></div>
+      </div>
+
+      <div class="painel">
+        <h2><span class="passo-tag">4</span>Confirme seus dados</h2>
+        <div class="conta-info">
+          <span id="conta-info-texto">—</span>
+        </div>
+        <div class="campo">
+          <label for="obs">Observações (opcional)</label>
+          <textarea id="obs" rows="2" placeholder="Ex: pouco doce, sem granola..."></textarea>
+        </div>
+      </div>
+
+      <div class="painel">
+        <h2><span class="passo-tag">5</span>Resumo</h2>
+        <div id="resumo-itens"></div>
+        <div class="resumo-total"><span>Total</span><span id="resumo-total">R$ 0,00</span></div>
+        <p class="msg-erro oculto" id="msg-erro"></p>
+        <button class="btn-confirmar" id="btn-confirmar" onclick="confirmarReserva()">Confirmar reserva</button>
+      </div>
+    </div>
+
+    <div class="ticket oculto" id="area-ticket">
+      <div class="furo esq"></div><div class="furo dir"></div>
+      <span class="status-badge">⏳ Aguardando confirmação da loja</span>
+      <h2>Reserva feita!</h2>
+      <div class="codigo" id="tk-codigo">PZ-0000</div>
+      <p id="tk-nome"></p>
+      <p id="tk-quando"></p>
+      <div class="linha-pontilhada"></div>
+      <div id="tk-itens"></div>
+      <div class="linha-pontilhada"></div>
+      <p style="font-family:'Fredoka'; font-size:1.2rem; color:var(--dourado);" id="tk-total"></p>
+      <button class="btn-zap-confirma" onclick="avisarWhatsapp()">📲 Avisar a loja no WhatsApp</button>
+      <br>
+      <button class="btn-nova" onclick="novaReserva()">Fazer nova reserva</button>
+    </div>
+
+    </div>
+
+    <div class="oculto" id="painel-cliente-minhas">
+      <div class="painel">
+        <div class="minhas-topo">
+          <div>
+            <h2 style="margin-bottom:2px;">Suas reservas</h2>
+            <p class="sub" style="margin-bottom:0;">Acompanhe o status de tudo que você já pediu.</p>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="minhas-stats" id="minhas-stats"></div>
+            <button class="btn-atualizar" onclick="renderMinhasReservas()">🔄 Atualizar</button>
+          </div>
+        </div>
+        <div id="minhas-reservas-lista"><p class="carregando">Carregando suas reservas...</p></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL ENDEREÇOS -->
+<div class="modal-fundo oculto" id="modal-enderecos">
+  <div class="modal-caixa largo" style="position:relative;">
+    <button class="modal-fechar-x" onclick="fecharEnderecos()">✕</button>
+    <h3>Meus endereços</h3>
+    <div id="lista-enderecos-modal"></div>
+    <button class="btn-add-endereco" onclick="abrirFormEndereco()">+ Adicionar novo endereço</button>
+  </div>
+</div>
+
+<!-- MODAL FORM ENDEREÇO -->
+<div class="modal-fundo oculto" id="modal-form-endereco">
+  <div class="modal-caixa largo" style="position:relative;">
+    <button class="modal-fechar-x" onclick="fecharFormEndereco()">✕</button>
+    <h3 id="form-endereco-titulo">Novo endereço</h3>
+    <input type="hidden" id="end-id">
+    <div class="campo">
+      <label for="end-apelido">Apelido</label>
+      <input type="text" id="end-apelido" placeholder="Ex: Casa, Trabalho">
+    </div>
+    <div class="grid2">
+      <div class="campo">
+        <label for="end-rua">Rua</label>
+        <input type="text" id="end-rua" placeholder="Nome da rua">
+      </div>
+      <div class="campo">
+        <label for="end-numero">Número</label>
+        <input type="text" id="end-numero" placeholder="Nº">
+      </div>
+    </div>
+    <div class="campo">
+      <label for="end-bairro">Bairro</label>
+      <input type="text" id="end-bairro" placeholder="Bairro">
+    </div>
+    <div class="campo">
+      <label for="end-referencia">Ponto de referência (opcional)</label>
+      <input type="text" id="end-referencia" placeholder="Ex: perto do mercado X">
+    </div>
+    <label class="campo-check">
+      <input type="checkbox" id="end-principal"> Definir como endereço principal
+    </label>
+    <p class="msg-erro oculto" id="endereco-form-erro"></p>
+    <button class="btn-confirmar" onclick="salvarEndereco()">Salvar endereço</button>
+  </div>
+</div>
+
+<!-- MODAL DETALHE DA RESERVA -->
+<div class="modal-fundo oculto" id="modal-detalhe-reserva">
+  <div class="modal-caixa" style="position:relative; max-width:380px;">
+    <button class="modal-fechar-x" onclick="fecharDetalheReserva()">✕</button>
+    <div class="ticket" style="padding:24px 20px;">
+      <div class="furo esq"></div><div class="furo dir"></div>
+      <span class="status-badge" id="dt-status">—</span>
+      <h2 style="font-size:1.15rem;">Detalhes da reserva</h2>
+      <div class="codigo" id="dt-codigo">PZ-0000</div>
+      <p id="dt-nome"></p>
+      <p id="dt-quando"></p>
+      <div class="linha-pontilhada"></div>
+      <div id="dt-itens"></div>
+      <div class="linha-pontilhada"></div>
+      <p style="font-family:'Fredoka'; font-size:1.15rem; color:var(--dourado);" id="dt-total"></p>
+      <p id="dt-obs" style="font-size:.82rem; color:#E9D9EE; margin-top:8px;"></p>
+    </div>
+    <button class="btn-nova" id="dt-btn-cancelar" style="width:100%; border-color:var(--vermelho); color:var(--vermelho); margin-top:14px;" onclick="cancelarReservaCliente()">Cancelar esta reserva</button>
+  </div>
+</div>
+
+<script>
+  let userToken = localStorage.getItem('userToken') || sessionStorage.getItem('userToken') || null;
+
+  async function apiFetch(path, opts = {}){
+    const headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
+    if(userToken) headers['Authorization'] = 'Bearer ' + userToken;
+    const res = await fetch(path, { ...opts, headers });
+    if(res.status === 401 && !path.startsWith('/api/auth/login') && !path.startsWith('/api/auth/register')){
+      userToken = null;
+      localStorage.removeItem('userToken');
+      sessionStorage.removeItem('userToken');
+      alert('Sua sessão expirou. Faça login novamente.');
+      location.reload();
+      throw new Error('Sessão expirada');
+    }
+    let data = null;
+    try{ data = await res.json(); }catch(e){ }
+    if(!res.ok) throw new Error((data && data.error) || 'Erro na requisição');
+    return data;
+  }
+
+  let PRODUTOS_BD = {};
+  let PRODUTOS = {};
+  const TAXA_ENTREGA = 5.00;
+  const DIAS_SEMANA = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+
+  const quantidades = {};
+  let diaSelecionado = null;
+  let horarioSelecionado = null;
+  let tipoRecebimento = null;
+  let todasReservas = [];
+  let usuarioLogado = null;
+  let ultimaReserva = null;
+  let detalheReservaAtualId = null;
+  let horariosRetirada = [];
+  let horariosEntrega = [];
+
+  function normalizarTelefone(t){
+    return (t || '').replace(/\D/g, '');
+  }
+
+  function aplicarMascaraTelefone(input){
+    let v = input.value.replace(/\D/g, '').slice(0,11);
+    if(v.length > 10){
+      v = v.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+    } else if(v.length > 5){
+      v = v.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+    } else if(v.length > 2){
+      v = v.replace(/(\d{2})(\d{0,5})/, '($1) $2');
+    } else if(v.length > 0){
+      v = v.replace(/(\d{0,2})/, '($1');
+    }
+    input.value = v.replace(/-$/, '').replace(/\)\s$/, ')');
+  }
+
+  function formatarTelefoneExibicao(t){
+    if(!t) return '';
+    const d = String(t).replace(/\D/g, '');
+    if(d.length === 11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+    if(d.length === 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+    return t;
+  }
+
+  function alternarSenha(id, btn){
+    const el = document.getElementById(id);
+    const mostrando = el.type === 'text';
+    el.type = mostrando ? 'password' : 'text';
+    btn.textContent = mostrando ? '👁️' : '🙈';
+  }
+
+  function mostrarAba(aba){
+    const tabLogin = document.getElementById('tab-login');
+    const tabCad = document.getElementById('tab-cadastro');
+    const formLogin = document.getElementById('form-login');
+    const formCad = document.getElementById('form-cadastro');
+    const formEsqueci = document.getElementById('form-esqueci');
+    const formVerificar = document.getElementById('form-verificar-email');
+    const tabsBar = document.getElementById('auth-tabs-bar');
+
+    if(formLogin) formLogin.classList.add('oculto');
+    if(formCad) formCad.classList.add('oculto');
+    if(formEsqueci) formEsqueci.classList.add('oculto');
+    if(formVerificar) formVerificar.classList.add('oculto');
+    if(tabsBar) tabsBar.classList.remove('oculto');
+
+    if(aba === 'login'){
+      if(tabLogin) tabLogin.classList.add('ativo');
+      if(tabCad) tabCad.classList.remove('ativo');
+      if(formLogin) formLogin.classList.remove('oculto');
+    } else if(aba === 'cadastro'){
+      if(tabCad) tabCad.classList.add('ativo');
+      if(tabLogin) tabLogin.classList.remove('ativo');
+      if(formCad) formCad.classList.remove('oculto');
+    } else if(aba === 'esqueci'){
+      if(tabsBar) tabsBar.classList.add('oculto');
+      if(formEsqueci) formEsqueci.classList.remove('oculto');
+      const suc = document.getElementById('esqueci-sucesso');
+      const err = document.getElementById('esqueci-erro');
+      if(suc) suc.classList.add('oculto');
+      if(err) err.classList.add('oculto');
+    } else if(aba === 'verificar'){
+      if(tabsBar) tabsBar.classList.add('oculto');
+      if(formVerificar) formVerificar.classList.remove('oculto');
+      const suc = document.getElementById('verificacao-sucesso');
+      const err = document.getElementById('verificacao-erro');
+      if(suc) suc.classList.add('oculto');
+      if(err) err.classList.add('oculto');
+    }
+  }
+
+  function obterIconeUrl(p){
+    if(p && p.imagem) return p.imagem;
+    const n = (p && p.nome ? p.nome : '').toLowerCase();
+    if(n.includes('farinha')) return '/icone-farinha.jpg';
+    if(n.includes('açaí') || n.includes('acai')) return '/icone-acai.jpg';
+    return (p && p.icone) ? p.icone : '/icone-acai.jpg';
+  }
+
+  function renderizarIconeHTML(p){
+    const url = obterIconeUrl(p);
+    if(url.startsWith('/') || url.startsWith('http') || url.includes('.')){
+      return `<img src="${url}" alt="${p.nome || 'Produto'}" style="width:100%; height:100%; object-fit:cover; display:block;">`;
+    }
+    return (p && p.icone) || '🍧';
+  }
+
+  async function carregarProdutos(){
+    try{
+      const lista = await apiFetch('/api/produtos?somenteAtivos=true');
+      PRODUTOS_BD = {};
+      PRODUTOS = {};
+      lista.forEach(p => {
+        PRODUTOS_BD[p.id] = p;
+        const iconeDef = obterIconeUrl(p);
+        PRODUTOS[p.id] = { id: p.id, nome: p.nome, preco: p.preco, imagem: p.imagem || iconeDef, icone: p.icone || iconeDef, estoque: p.estoque };
+        if(quantidades[p.id] === undefined) quantidades[p.id] = 0;
+      });
+    }catch(e){
+      PRODUTOS_BD = {}; PRODUTOS = {};
+    }
+  }
+
+  async function carregarHorarios(tipo){
+    try{
+      const lista = await apiFetch('/api/horarios?tipo=' + encodeURIComponent(tipo));
+      if(tipo === 'retirada') horariosRetirada = lista; else horariosEntrega = lista;
+      return lista;
+    }catch(e){
+      if(tipo === 'retirada') horariosRetirada = []; else horariosEntrega = [];
+      return [];
+    }
+  }
+
+  async function carregarMeusEnderecos(){
+    if(!userToken) return [];
+    try{
+      const lista = await apiFetch('/api/enderecos');
+      if(usuarioLogado) usuarioLogado.enderecos = lista;
+      return lista;
+    }catch(e){
+      return (usuarioLogado && usuarioLogado.enderecos) || [];
+    }
+  }
+
+  async function fazerLogin(){
+    const erroEl = document.getElementById('login-erro');
+    erroEl.classList.add('oculto');
+    const email = document.getElementById('login-email').value.trim();
+    const senha = document.getElementById('login-senha').value;
+
+    if(!email || !senha){
+      erroEl.textContent = 'Preencha o e-mail e a senha.';
+      erroEl.classList.remove('oculto'); return;
+    }
+
+    const btn = document.getElementById('btn-login-submit');
+    if(btn){ btn.disabled = true; btn.textContent = 'Entrando...'; }
+
+    try{
+      await window.FirebaseAuth.loginComEmail(email, senha);
+    }catch(e){
+      erroEl.textContent = e.message;
+      erroEl.classList.remove('oculto');
+    }finally{
+      if(btn){ btn.disabled = false; btn.textContent = 'Entrar'; }
+    }
+  }
+
+  async function fazerLoginGoogle(){
+    try{
+      const user = await window.FirebaseAuth.loginComGoogle();
+      if(user){
+        abrirModalDefinirSenhaGoogle();
+      }
+    }catch(e){
+      alert(e.message);
+    }
+  }
+
+  function abrirModalDefinirSenhaGoogle(){
+    const m = document.getElementById('modal-definir-senha-google');
+    if(m){
+      document.getElementById('google-senha-sucesso').classList.add('oculto');
+      document.getElementById('google-senha-erro').classList.add('oculto');
+      document.getElementById('google-senha-nova').value = '';
+      document.getElementById('google-senha-confirmar').value = '';
+      m.classList.remove('oculto');
+    }
+  }
+
+  function fecharModalDefinirSenhaGoogle(){
+    const m = document.getElementById('modal-definir-senha-google');
+    if(m) m.classList.add('oculto');
+  }
+
+  async function salvarSenhaGoogle(){
+    const erroEl = document.getElementById('google-senha-erro');
+    const sucEl = document.getElementById('google-senha-sucesso');
+    erroEl.classList.add('oculto');
+    sucEl.classList.add('oculto');
+
+    const novaSenha = document.getElementById('google-senha-nova').value;
+    const confirmarNovaSenha = document.getElementById('google-senha-confirmar').value;
+
+    if(!novaSenha || novaSenha.length < 8){
+      erroEl.textContent = 'A senha precisa ter pelo menos 8 caracteres.';
+      erroEl.classList.remove('oculto'); return;
+    }
+    if(novaSenha !== confirmarNovaSenha){
+      erroEl.textContent = 'As senhas não coincidem.';
+      erroEl.classList.remove('oculto'); return;
+    }
+
+    const btn = document.getElementById('btn-google-senha-submit');
+    if(btn){ btn.disabled = true; btn.textContent = 'Salvando senha...'; }
+
+    try{
+      await window.FirebaseAuth.alterarSenhaLogado('', novaSenha, confirmarNovaSenha);
+      sucEl.textContent = 'Senha cadastrada com sucesso! Agora você também pode entrar com seu e-mail e senha.';
+      sucEl.classList.remove('oculto');
+      setTimeout(() => fecharModalDefinirSenhaGoogle(), 1800);
+    }catch(e){
+      erroEl.textContent = e.message;
+      erroEl.classList.remove('oculto');
+    }finally{
+      if(btn){ btn.disabled = false; btn.textContent = 'Salvar Senha'; }
+    }
+  }
+
+  async function criarConta(){
+    const erroEl = document.getElementById('cadastro-erro');
+    erroEl.classList.add('oculto');
+    const nome = document.getElementById('cad-nome').value.trim();
+    const email = document.getElementById('cad-email').value.trim();
+    const telefone = normalizarTelefone(document.getElementById('cad-telefone').value);
+    const senha = document.getElementById('cad-senha').value;
+    const senha2 = document.getElementById('cad-senha2').value;
+
+    if(!nome || !email || !senha || !senha2){
+      erroEl.textContent = 'Preencha todos os campos obrigatórios.';
+      erroEl.classList.remove('oculto'); return;
+    }
+    if(senha.length < 8){
+      erroEl.textContent = 'A senha precisa ter pelo menos 8 caracteres.';
+      erroEl.classList.remove('oculto'); return;
+    }
+    if(senha !== senha2){
+      erroEl.textContent = 'As senhas não coincidem.';
+      erroEl.classList.remove('oculto'); return;
+    }
+
+    const btn = document.getElementById('btn-cadastro-submit');
+    if(btn){ btn.disabled = true; btn.textContent = 'Criando conta...'; }
+
+    try{
+      await window.FirebaseAuth.cadastrarComEmail(nome, email, senha, senha2, telefone);
+    }catch(e){
+      erroEl.textContent = e.message;
+      erroEl.classList.remove('oculto');
+    }finally{
+      if(btn){ btn.disabled = false; btn.textContent = 'Criar conta'; }
+    }
+  }
+
+  async function solicitarRecuperacaoSenha(){
+    const erroEl = document.getElementById('esqueci-erro');
+    const sucEl = document.getElementById('esqueci-sucesso');
+    erroEl.classList.add('oculto');
+    sucEl.classList.add('oculto');
+
+    const email = document.getElementById('esqueci-email').value.trim();
+    if(!email){
+      erroEl.textContent = 'Digite seu e-mail.';
+      erroEl.classList.remove('oculto'); return;
+    }
+
+    const btn = document.getElementById('btn-esqueci-submit');
+    if(btn) btn.disabled = true;
+
+    try{
+      await window.FirebaseAuth.enviarRecuperacaoSenha(email);
+      sucEl.textContent = 'Enviamos um link para redefinir sua senha. Verifique sua caixa de entrada e spams.';
+      sucEl.classList.remove('oculto');
+    }catch(e){
+      erroEl.textContent = e.message;
+      erroEl.classList.remove('oculto');
+    }finally{
+      if(btn) btn.disabled = false;
+    }
+  }
+
+  async function reenviarEmailConfirmação(){
+    const erroEl = document.getElementById('verificacao-erro');
+    const sucEl = document.getElementById('verificacao-sucesso');
+    erroEl.classList.add('oculto');
+    sucEl.classList.add('oculto');
+
+    try{
+      await window.FirebaseAuth.reenviarEmailVerificacao();
+      sucEl.textContent = 'E-mail de confirmação reenviado com sucesso!';
+      sucEl.classList.remove('oculto');
+    }catch(e){
+      erroEl.textContent = e.message;
+      erroEl.classList.remove('oculto');
+    }
+  }
+
+  async function jáConfirmeiEmail(){
+    const erroEl = document.getElementById('verificacao-erro');
+    const sucEl = document.getElementById('verificacao-sucesso');
+    erroEl.classList.add('oculto');
+    sucEl.classList.add('oculto');
+
+    try{
+      const verificado = await window.FirebaseAuth.verificarSeJaConfirmou();
+      if(verificado){
+        sucEl.textContent = 'E-mail verificado com sucesso! Carregando sua conta...';
+        sucEl.classList.remove('oculto');
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        erroEl.textContent = 'Seu e-mail ainda não foi verificado. Clique no link enviado para seu e-mail.';
+        erroEl.classList.remove('oculto');
+      }
+    }catch(e){
+      erroEl.textContent = e.message;
+      erroEl.classList.remove('oculto');
+    }
+  }
+
+  function abrirModalAlterarSenha(){
+    document.getElementById('modal-alterar-senha').classList.remove('oculto');
+    document.getElementById('alt-senha-sucesso').classList.add('oculto');
+    document.getElementById('alt-senha-erro').classList.add('oculto');
+    document.getElementById('alt-senha-atual').value = '';
+    document.getElementById('alt-senha-nova').value = '';
+    document.getElementById('alt-senha-confirmar').value = '';
+
+    const user = window.FirebaseAuth ? window.FirebaseAuth.getUsuarioAtual() : null;
+    const isPassword = user && user.providerData.some(p => p.providerId === 'password');
+    const campoAtual = document.getElementById('campo-senha-atual-wrap');
+    const tituloModal = document.getElementById('titulo-modal-alterar-senha');
+
+    if(!isPassword && campoAtual){
+      campoAtual.classList.add('oculto');
+      if(tituloModal) tituloModal.textContent = '🔑 Definir Senha de Acesso';
+    } else if(campoAtual){
+      campoAtual.classList.remove('oculto');
+      if(tituloModal) tituloModal.textContent = '🔒 Alterar Senha';
+    }
+  }
+
+  function fecharModalAlterarSenha(){
+    document.getElementById('modal-alterar-senha').classList.add('oculto');
+  }
+
+  async function confirmarAlterarSenha(){
+    const erroEl = document.getElementById('alt-senha-erro');
+    const sucEl = document.getElementById('alt-senha-sucesso');
+    erroEl.classList.add('oculto');
+    sucEl.classList.add('oculto');
+
+    const senhaAtual = document.getElementById('alt-senha-atual').value;
+    const novaSenha = document.getElementById('alt-senha-nova').value;
+    const confirmarNovaSenha = document.getElementById('alt-senha-confirmar').value;
+
+    const btn = document.getElementById('btn-alt-senha-submit');
+    if(btn) btn.disabled = true;
+
+    try{
+      await window.FirebaseAuth.alterarSenhaLogado(senhaAtual, novaSenha, confirmarNovaSenha);
+      sucEl.textContent = 'Senha alterada com sucesso!';
+      sucEl.classList.remove('oculto');
+      setTimeout(() => fecharModalAlterarSenha(), 1500);
+    }catch(e){
+      erroEl.textContent = e.message;
+      erroEl.classList.remove('oculto');
+    }finally{
+      if(btn) btn.disabled = false;
+    }
+  }
+
+  async function autoLoginSeHouverToken(){
+    if(!userToken) return false;
+    try{
+      const profile = await apiFetch('/api/auth/me');
+      usuarioLogado = profile;
+      await entrarApp();
+      return true;
+    }catch(e){
+      userToken = null;
+      localStorage.removeItem('userToken');
+      return false;
+    }
+  }
+
+  async function entrarApp(){
+    document.getElementById('area-auth').classList.add('oculto');
+    document.getElementById('area-app').classList.remove('oculto');
+    document.getElementById('saudacao').textContent = 'Olá, ' + (usuarioLogado.nome ? usuarioLogado.nome.split(' ')[0] : 'Cliente') + '!';
+    document.getElementById('saudacao').classList.remove('oculto');
+    document.getElementById('btn-meus-enderecos').classList.remove('oculto');
+    const btnAlt = document.getElementById('btn-alterar-senha');
+    if(btnAlt) btnAlt.classList.remove('oculto');
+    document.getElementById('btn-sair').classList.remove('oculto');
+    document.getElementById('btn-nav-minhas-reservas').classList.remove('oculto');
+    document.getElementById('conta-info-texto').textContent = `Pedido em nome de ${usuarioLogado.nome} (${usuarioLogado.email || 'Conta Verificada'})`;
+
+    await carregarMeusEnderecos();
+    mostrarPainelCliente('nova');
+    await carregarProdutos();
+    renderProdutos();
+    renderDias();
+    await carregarHorarios('retirada');
+    await carregarHorarios('entrega');
+    renderHorarios();
+    renderEnderecosSelect();
+    renderResumo();
+  }
+
+  async function sair(){
+    if(window.FirebaseAuth){
+      await window.FirebaseAuth.logout();
+    }
+    usuarioLogado = null;
+    userToken = null;
+    localStorage.removeItem('userToken');
+    sessionStorage.removeItem('userToken');
+    document.getElementById('area-app').classList.add('oculto');
+    document.getElementById('area-auth').classList.remove('oculto');
+    document.getElementById('saudacao').classList.add('oculto');
+    document.getElementById('btn-meus-enderecos').classList.add('oculto');
+    const btnAlt = document.getElementById('btn-alterar-senha');
+    if(btnAlt) btnAlt.classList.add('oculto');
+    document.getElementById('btn-sair').classList.add('oculto');
+    document.getElementById('btn-nav-minhas-reservas').classList.add('oculto');
+    mostrarAba('login');
+    resetarFormularioReserva();
+  }
+
+  function renderProdutos(){
+    const cont = document.getElementById('lista-produtos');
+    const ids = Object.keys(PRODUTOS);
+    if(ids.length === 0){
+      cont.innerHTML = '<p class="sub">Nenhum produto disponível no momento.</p>';
+      return;
+    }
+    cont.innerHTML = ids.map(id => {
+      const p = PRODUTOS[id];
+      const esgotado = typeof p.estoque === 'number' && p.estoque <= 0;
+      if(esgotado && quantidades[id] > 0) quantidades[id] = 0;
+      return `
+      <div class="produto-linha ${esgotado ? 'esgotado' : ''}">
+        <div class="produto-info">
+          <div class="produto-icon">${renderizarIconeHTML(p)}</div>
+          <div>
+            <div class="produto-nome">${p.nome}${esgotado ? '<span class="tag-esgotado">Esgotado</span>' : ''}</div>
+            <div class="produto-preco">R$ ${p.preco.toFixed(2).replace('.', ',')}</div>
+          </div>
+        </div>
+        <div class="qtd-controle">
+          <button onclick="alterarQtd('${id}',-1)" ${esgotado ? 'disabled' : ''}>-</button>
+          <span id="qtd-${id}">${quantidades[id] || 0}</span>
+          <button onclick="alterarQtd('${id}',1)" ${esgotado ? 'disabled' : ''}>+</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function alterarQtd(id, delta){
+    const p = PRODUTOS[id];
+    if(!p) return;
+    const max = typeof p.estoque === 'number' ? p.estoque : Infinity;
+    quantidades[id] = Math.max(0, Math.min(max, (quantidades[id] || 0) + delta));
+    document.getElementById('qtd-' + id).textContent = quantidades[id];
+    renderResumo();
+  }
+
+  function selecionarTipo(tipo){
+    tipoRecebimento = tipo;
+    horarioSelecionado = null;
+    document.getElementById('btn-tipo-retirada').classList.toggle('ativo', tipo==='retirada');
+    document.getElementById('btn-tipo-entrega').classList.toggle('ativo', tipo==='entrega');
+    document.getElementById('bloco-endereco-reserva').classList.toggle('oculto', tipo!=='entrega');
+    document.getElementById('titulo-horario').textContent = tipo === 'retirada'
+      ? 'Escolha o horário para retirada'
+      : 'Escolha o horário para entrega';
+    if(tipo === 'entrega') renderEnderecosSelect();
+    renderHorarios();
+    renderResumo();
+  }
+
+  function renderEnderecosSelect(){
+    const sel = document.getElementById('select-endereco');
+    if(!usuarioLogado) return;
+    const enderecos = usuarioLogado.enderecos || [];
+    if(enderecos.length === 0){
+      sel.innerHTML = `<option value="">Nenhum endereço salvo</option>`;
+      return;
+    }
+    sel.innerHTML = enderecos.map(e =>
+      `<option value="${e.id}">${e.apelido} — ${e.rua}, ${e.numero}${e.principal ? ' ⭐' : ''}</option>`
+    ).join('');
+    const principal = enderecos.find(e => e.principal);
+    if(principal) sel.value = principal.id;
+  }
+
+  function formatarData(d){
+    const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), dia = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${dia}`;
+  }
+
+  function renderDias(){
+    const cont = document.getElementById('lista-dias');
+    const hoje = new Date();
+    let html = '';
+    for(let i=0;i<7;i++){
+      const d = new Date(hoje);
+      d.setDate(hoje.getDate() + i);
+      const dataStr = formatarData(d);
+      const sem = DIAS_SEMANA[d.getDay()];
+      const num = d.getDate();
+      if(i === 0 && !diaSelecionado) diaSelecionado = dataStr;
+      const ativo = diaSelecionado === dataStr ? 'ativo' : '';
+      html += `
+        <button class="dia-pill ${ativo}" onclick="selecionarDia('${dataStr}')">
+          <div class="dsem">${i===0 ? 'Hoje' : sem}</div>
+          <div class="dnum">${num}</div>
+        </button>`;
+    }
+    cont.innerHTML = html;
+  }
+
+  function selecionarDia(dataStr){
+    diaSelecionado = dataStr;
+    horarioSelecionado = null;
+    renderDias();
+    renderHorarios();
+    renderResumo();
+  }
+
+  async function renderHorarios(){
+    const cont = document.getElementById('lista-horarios');
+    if(!tipoRecebimento){
+      cont.innerHTML = '<div class="aviso-horario">Escolha se prefere <strong>retirar na loja</strong> ou <strong>receber por entrega</strong> no passo 2 para ver os horários disponíveis.</div>';
+      return;
+    }
+    const listaOriginal = tipoRecebimento === 'retirada' ? horariosRetirada : horariosEntrega;
+    const listaFiltrada = listaOriginal.filter(h => !h.bloqueado);
+
+    if(listaFiltrada.length === 0){
+      cont.innerHTML = '<div class="aviso-horario">Sem horários disponíveis para esta opção.</div>';
+      return;
+    }
+
+    let ocupacao = {};
+    if(diaSelecionado){
+      try{
+        ocupacao = await apiFetch(`/api/reservas/vagas?data=${diaSelecionado}&tipo=${tipoRecebimento}`);
+      }catch(e){ }
+    }
+
+    cont.innerHTML = listaFiltrada.map(hObj => {
+      const h = hObj.hora;
+      const vagas = ocupacao[h] !== undefined ? ocupacao[h] : 6;
+      const cheio = vagas <= 0;
+      const ativo = horarioSelecionado === h ? 'ativo' : '';
+      return `
+        <button class="horario-btn ${ativo} ${cheio ? 'cheio' : ''}"
+          ${cheio ? 'disabled' : ''}
+          onclick="selecionarHorario('${h}')">
+          ${h}
+          <small>${cheio ? 'Esgotado' : vagas + ' vagas'}</small>
+        </button>`;
+    }).join('');
+  }
+
+  function selecionarHorario(h){
+    horarioSelecionado = h;
+    renderHorarios();
+    renderResumo();
+  }
+
+  function calcularTotal(){
+    let subtotal = 0;
+    Object.entries(quantidades).forEach(([id, q]) => {
+      if(PRODUTOS[id]) subtotal += q * PRODUTOS[id].preco;
+    });
+    const taxa = tipoRecebimento === 'entrega' ? TAXA_ENTREGA : 0;
+    return { subtotal, taxa, total: subtotal + taxa };
+  }
+
+  function getEnderecoTextoSelecionado(){
+    if(tipoRecebimento !== 'entrega') return null;
+    const sel = document.getElementById('select-endereco');
+    const endId = sel ? sel.value : null;
+    const end = (usuarioLogado.enderecos || []).find(e => e.id === endId);
+    if(!end) return null;
+    return `${end.rua}, ${end.numero}${end.bairro ? ' — ' + end.bairro : ''}${end.referencia ? ' (' + end.referencia + ')' : ''}`;
+  }
+
+  function renderResumo(){
+    const cont = document.getElementById('resumo-itens');
+    const { subtotal, taxa, total } = calcularTotal();
+    const itens = Object.entries(quantidades).filter(([_, q]) => q > 0);
+
+    if(itens.length === 0){
+      cont.innerHTML = '<div class="resumo-linha"><span>Nenhum produto selecionado</span></div>';
+    } else {
+      let html = itens.map(([id, q]) => `
+        <div class="resumo-linha">
+          <span>${q}x ${PRODUTOS[id].nome}</span>
+          <span>R$ ${(q * PRODUTOS[id].preco).toFixed(2).replace('.', ',')}</span>
+        </div>`).join('');
+      if(tipoRecebimento === 'entrega'){
+        html += `
+        <div class="resumo-linha" style="border-top:1px dashed #eee0d4; margin-top:4px; padding-top:6px;">
+          <span>Taxa de entrega</span>
+          <span>R$ ${TAXA_ENTREGA.toFixed(2).replace('.', ',')}</span>
+        </div>`;
+      }
+      cont.innerHTML = html;
+    }
+    document.getElementById('resumo-total').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+  }
+
+  async function confirmarReserva(){
+    const erroEl = document.getElementById('msg-erro');
+    erroEl.classList.add('oculto');
+
+    const { total } = calcularTotal();
+    const temItens = Object.values(quantidades).some(q => q > 0);
+
+    if(!temItens){
+      erroEl.textContent = 'Escolha pelo menos 1 produto.';
+      erroEl.classList.remove('oculto'); return;
+    }
+    if(!tipoRecebimento){
+      erroEl.textContent = 'Escolha se prefere retirar na loja ou entrega (passo 2).';
+      erroEl.classList.remove('oculto'); return;
+    }
+    if(tipoRecebimento === 'entrega' && !getEnderecoTextoSelecionado()){
+      erroEl.textContent = 'Selecione ou cadastre um endereço de entrega (passo 2).';
+      erroEl.classList.remove('oculto'); return;
+    }
+    if(!diaSelecionado || !horarioSelecionado){
+      erroEl.textContent = 'Escolha o dia e o horário da reserva (passo 3).';
+      erroEl.classList.remove('oculto'); return;
+    }
+
+    const payloadItens = Object.entries(quantidades)
+      .filter(([_, q]) => q > 0)
+      .map(([produtoId, quantidade]) => ({ produtoId, quantidade }));
+
+    const enderecoTexto = getEnderecoTextoSelecionado();
+    const obs = document.getElementById('obs').value.trim();
+
+    try{
+      const btn = document.getElementById('btn-confirmar');
+      btn.disabled = true;
+      btn.textContent = 'Enviando reserva...';
+
+      const res = await apiFetch('/api/reservas', {
+        method: 'POST',
+        body: JSON.stringify({
+          tipo: tipoRecebimento,
+          endereco: enderecoTexto,
+          data: diaSelecionado,
+          horario: horarioSelecionado,
+          obs,
+          itens: payloadItens,
+        }),
+      });
+
+      btn.disabled = false;
+      btn.textContent = 'Confirmar reserva';
+
+      ultimaReserva = res;
+      exibirTicket(res);
+    }catch(e){
+      const btn = document.getElementById('btn-confirmar');
+      btn.disabled = false;
+      btn.textContent = 'Confirmar reserva';
+      erroEl.textContent = e.message || 'Erro ao realizar reserva.';
+      erroEl.classList.remove('oculto');
+    }
+  }
+
+  function exibirTicket(r){
+    document.getElementById('area-reserva').classList.add('oculto');
+    document.getElementById('area-ticket').classList.remove('oculto');
+
+    const [y,m,d] = r.data.split('-');
+    const tipoTxt = r.tipo === 'entrega' ? '🛵 Entrega em: ' + r.endereco : '🏪 Retirada na loja';
+
+    document.getElementById('tk-codigo').textContent = r.codigo;
+    document.getElementById('tk-nome').textContent = 'Cliente: ' + r.nome;
+    document.getElementById('tk-quando').innerHTML = `${d}/${m} às ${r.horario}<br><small style="color:#E9D9EE">${tipoTxt}</small>`;
+
+    const itensHtml = (r.itens || []).map(i => `
+      <div class="item-tk">
+        <span>${i.quantidade}x ${(i.produto && i.produto.nome) || 'Produto'}</span>
+        <span>R$ ${(i.quantidade * i.valorUnitario).toFixed(2).replace('.', ',')}</span>
+      </div>`).join('');
+
+    const taxaHtml = r.taxaEntrega ? `
+      <div class="item-tk" style="opacity:.85">
+        <span>Taxa de entrega</span>
+        <span>R$ ${r.taxaEntrega.toFixed(2).replace('.', ',')}</span>
+      </div>` : '';
+
+    document.getElementById('tk-itens').innerHTML = itensHtml + taxaHtml;
+    document.getElementById('tk-total').textContent = 'Total: R$ ' + r.total.toFixed(2).replace('.', ',');
+  }
+
+  function avisarWhatsapp(){
+    if(!ultimaReserva) return;
+    const r = ultimaReserva;
+    const [y,m,d] = r.data.split('-');
+    const tipoTxt = r.tipo === 'entrega' ? '🛵 Entrega: ' + r.endereco : '🏪 Retirada na loja';
+    const itensTxt = (r.itens || []).map(i => `• ${i.quantidade}x ${(i.produto && i.produto.nome) || 'Produto'}`).join('\n');
+
+    let msg = `Olá! Fiz uma reserva pelo site:\n\n` +
+              `*Código:* ${r.codigo}\n` +
+              `*Nome:* ${r.nome}\n` +
+              `*Data:* ${d}/${m} às ${r.horario}\n` +
+              `*Tipo:* ${tipoTxt}\n\n` +
+              `*Itens:*\n${itensTxt}\n\n` +
+              `*Total:* R$ ${r.total.toFixed(2).replace('.', ',')}`;
+
+    if(r.obs) msg += `\n*Obs:* ${r.obs}`;
+
+    window.open(`https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
+  }
+
+  function resetarFormularioReserva(){
+    Object.keys(quantidades).forEach(k => quantidades[k] = 0);
+    horarioSelecionado = null;
+    tipoRecebimento = null;
+    diaSelecionado = null;
+    ultimaReserva = null;
+    document.getElementById('obs').value = '';
+    document.getElementById('btn-tipo-retirada').classList.remove('ativo');
+    document.getElementById('btn-tipo-entrega').classList.remove('ativo');
+    document.getElementById('bloco-endereco-reserva').classList.add('oculto');
+    document.getElementById('msg-erro').classList.add('oculto');
+    document.getElementById('area-ticket').classList.add('oculto');
+    document.getElementById('area-reserva').classList.remove('oculto');
+  }
+
+  function novaReserva(){
+    resetarFormularioReserva();
+    renderProdutos();
+    renderDias();
+    renderHorarios();
+    renderResumo();
+  }
+
+  function mostrarPainelCliente(painel){
+    document.getElementById('tab-cliente-nova').classList.toggle('ativo', painel==='nova');
+    document.getElementById('tab-cliente-minhas').classList.toggle('ativo', painel==='minhas');
+    document.getElementById('painel-cliente-nova').classList.toggle('oculto', painel!=='nova');
+    document.getElementById('painel-cliente-minhas').classList.toggle('oculto', painel!=='minhas');
+
+    if(painel === 'minhas'){
+      renderMinhasReservas();
+    }
+  }
+
+  const STATUS_LABEL = {
+    pendente:'Pendente', confirmada:'Confirmada', em_preparo:'Em preparo',
+    pronta_retirada:'Pronta para retirada', saiu_entrega:'Saiu para entrega',
+    concluida:'Concluída', solicitacao_cancelamento:'Solicitação de cancelamento', cancelada:'Cancelada'
+  };
+
+  function normalizarReserva(r){
+    return {
+      ...r,
+      itens: (r.itens || []).map(i => ({
+        qtd: i.quantidade,
+        preco: i.valorUnitario,
+        produto: (i.produto && i.produto.nome) || 'Produto removido',
+        produtoId: i.produtoId,
+      })),
+    };
+  }
+
+  async function renderMinhasReservas(){
+    const cont = document.getElementById('minhas-reservas-lista');
+    cont.innerHTML = '<p class="carregando">Carregando suas reservas...</p>';
+
+    try{
+      const raw = await apiFetch('/api/reservas/minhas');
+      todasReservas = raw.map(normalizarReserva);
+    }catch(e){
+      todasReservas = [];
+    }
+
+    const minhas = [...todasReservas].sort((a,b) => (b.data+b.horario).localeCompare(a.data+a.horario));
+
+    const stats = {};
+    minhas.forEach(r => { stats[r.status] = (stats[r.status]||0)+1; });
+    document.getElementById('minhas-stats').innerHTML = `
+      <div class="stat-card"><div class="n">${minhas.length}</div><div class="l">total</div></div>
+      <div class="stat-card"><div class="n">${(stats.pendente||0)+(stats.confirmada||0)+(stats.em_preparo||0)}</div><div class="l">ativas</div></div>
+    `;
+
+    if(minhas.length === 0){
+      cont.innerHTML = `
+        <div class="vazio-lista">
+          <span class="emoji-vazio">🍧</span>
+          Você ainda não fez nenhuma reserva.<br>
+          <button class="btn-confirmar" style="width:auto; padding:10px 24px; margin-top:14px;" onclick="mostrarPainelCliente('nova')">Fazer minha primeira reserva</button>
+        </div>`;
+      return;
+    }
+
+    cont.innerHTML = minhas.map(r => {
+      const [y,m,d] = r.data.split('-');
+      const itensTxt = r.itens.map(i => `${i.qtd}x ${i.produto}`).join(', ');
+      const tipoTxt = r.tipo === 'entrega' ? `🛵 Entrega: ${r.endereco}` : '🏪 Retirada na loja';
+      const cancelavel = ['pendente','confirmada'].includes(r.status);
+
+      return `
+        <div class="reserva-cliente-card">
+          <div class="reserva-cliente-topo">
+            <div>
+              <h4>Reserva ${r.codigo}</h4>
+              <div class="meta">Data: ${d}/${m} às ${r.horario} · ${tipoTxt}</div>
+            </div>
+            <span class="badge badge-${r.status}">${STATUS_LABEL[r.status]}</span>
+          </div>
+          <div class="reserva-cliente-itens">${itensTxt} — <strong>R$ ${r.total.toFixed(2).replace('.', ',')}</strong></div>
+          <div class="reserva-cliente-acoes">
+            <button class="b-ver-detalhe" onclick="abrirDetalheReserva('${r.id}')">Ver detalhes</button>
+            ${cancelavel ? `<button class="b-cancelar-cliente" onclick="solicitarCancelamentoCliente('${r.id}')">Solicitar cancelamento</button>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function abrirDetalheReserva(id){
+    const r = todasReservas.find(x => x.id === id);
+    if(!r) return;
+    detalheReservaAtualId = id;
+
+    const [y,m,d] = r.data.split('-');
+    const tipoTxt = r.tipo === 'entrega' ? '🛵 Entrega: ' + r.endereco : '🏪 Retirada na loja';
+
+    document.getElementById('dt-status').textContent = STATUS_LABEL[r.status] || r.status;
+    document.getElementById('dt-codigo').textContent = r.codigo;
+    document.getElementById('dt-nome').textContent = 'Cliente: ' + r.nome;
+    document.getElementById('dt-quando').innerHTML = `${d}/${m} às ${r.horario}<br><small style="color:#E9D9EE">${tipoTxt}</small>`;
+
+    const itensHtml = r.itens.map(i => `
+      <div class="item-tk">
+        <span>${i.qtd}x ${i.produto}</span>
+        <span>R$ ${(i.qtd * i.preco).toFixed(2).replace('.', ',')}</span>
+      </div>`).join('');
+
+    const taxaHtml = r.taxaEntrega ? `
+      <div class="item-tk" style="opacity:.85">
+        <span>Taxa de entrega</span>
+        <span>R$ ${r.taxaEntrega.toFixed(2).replace('.', ',')}</span>
+      </div>` : '';
+
+    document.getElementById('dt-itens').innerHTML = itensHtml + taxaHtml;
+    document.getElementById('dt-total').textContent = 'Total: R$ ' + r.total.toFixed(2).replace('.', ',');
+    document.getElementById('dt-obs').textContent = r.obs ? 'Obs: ' + r.obs : '';
+
+    const cancelavel = ['pendente','confirmada'].includes(r.status);
+    document.getElementById('dt-btn-cancelar').style.display = cancelavel ? 'block' : 'none';
+
+    document.getElementById('modal-detalhe-reserva').classList.remove('oculto');
+  }
+
+  function fecharDetalheReserva(){
+    document.getElementById('modal-detalhe-reserva').classList.add('oculto');
+  }
+
+  async function solicitarCancelamentoCliente(id){
+    if(!confirm('Deseja solicitar o cancelamento desta reserva? A loja analisará o pedido.')) return;
+    try{
+      await apiFetch(`/api/reservas/${id}/cancelamento`, { method: 'POST' });
+      await renderMinhasReservas();
+      alert('Solicitação de cancelamento enviada com sucesso.');
+    }catch(e){
+      alert(e.message || 'Erro ao solicitar cancelamento.');
+    }
+  }
+
+  async function cancelarReservaCliente(){
+    if(!detalheReservaAtualId) return;
+    fecharDetalheReserva();
+    await solicitarCancelamentoCliente(detalheReservaAtualId);
+  }
+
+  function abrirEnderecos(){
+    renderListaEnderecosModal();
+    document.getElementById('modal-enderecos').classList.remove('oculto');
+  }
+
+  function fecharEnderecos(){
+    document.getElementById('modal-enderecos').classList.add('oculto');
+  }
+
+  function renderListaEnderecosModal(){
+    const cont = document.getElementById('lista-enderecos-modal');
+    const enderecos = (usuarioLogado && usuarioLogado.enderecos) || [];
+
+    if(enderecos.length === 0){
+      cont.innerHTML = '<p class="sub" style="text-align:center;">Nenhum endereço cadastrado ainda.</p>';
+      return;
+    }
+
+    cont.innerHTML = enderecos.map(e => `
+      <div class="endereco-item">
+        <div>
+          <h5>${e.apelido} ${e.principal ? '<span class="tag-principal">Principal</span>' : ''}</h5>
+          <p>${e.rua}, ${e.numero}${e.bairro ? ' — ' + e.bairro : ''}</p>
+          ${e.referencia ? `<p style="opacity:.7">Ref: ${e.referencia}</p>` : ''}
+        </div>
+        <div class="endereco-acoes">
+          <button onclick="editarEndereco('${e.id}')">Editar</button>
+          <button class="excluir" onclick="excluirEndereco('${e.id}')">Excluir</button>
+        </div>
+      </div>`).join('');
+  }
+
+  function abrirFormEndereco(end = null){
+    document.getElementById('endereco-form-erro').classList.add('oculto');
+    document.getElementById('end-id').value = end ? end.id : '';
+    document.getElementById('end-apelido').value = end ? end.apelido : '';
+    document.getElementById('end-rua').value = end ? end.rua : '';
+    document.getElementById('end-numero').value = end ? end.numero : '';
+    document.getElementById('end-bairro').value = end ? end.bairro : '';
+    document.getElementById('end-referencia').value = end ? (end.referencia || '') : '';
+    document.getElementById('end-principal').checked = end ? !!end.principal : ((usuarioLogado.enderecos || []).length === 0);
+    document.getElementById('form-endereco-titulo').textContent = end ? 'Editar endereço' : 'Novo endereço';
+
+    document.getElementById('modal-form-endereco').classList.remove('oculto');
+  }
+
+  function fecharFormEndereco(){
+    document.getElementById('modal-form-endereco').classList.add('oculto');
+  }
+
+  function editarEndereco(id){
+    const end = (usuarioLogado.enderecos || []).find(e => e.id === id);
+    if(end) abrirFormEndereco(end);
+  }
+
+  async function salvarEndereco(){
+    const erroEl = document.getElementById('endereco-form-erro');
+    erroEl.classList.add('oculto');
+
+    const id = document.getElementById('end-id').value;
+    const apelido = document.getElementById('end-apelido').value.trim();
+    const rua = document.getElementById('end-rua').value.trim();
+    const numero = document.getElementById('end-numero').value.trim();
+    const bairro = document.getElementById('end-bairro').value.trim();
+    const referencia = document.getElementById('end-referencia').value.trim();
+    const principal = document.getElementById('end-principal').checked;
+
+    if(!apelido || !rua || !numero){
+      erroEl.textContent = 'Preencha apelido, rua e número.';
+      erroEl.classList.remove('oculto'); return;
+    }
+
+    try{
+      if(id){
+        await apiFetch(`/api/enderecos/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ apelido, rua, numero, bairro, referencia, principal }),
+        });
+      } else {
+        await apiFetch('/api/enderecos', {
+          method: 'POST',
+          body: JSON.stringify({ apelido, rua, numero, bairro, referencia, principal }),
+        });
+      }
+
+      await carregarMeusEnderecos();
+      fecharFormEndereco();
+      renderListaEnderecosModal();
+      renderEnderecosSelect();
+      renderResumo();
+    }catch(e){
+      erroEl.textContent = e.message || 'Erro ao salvar endereço.';
+      erroEl.classList.remove('oculto');
+    }
+  }
+
+  async function excluirEndereco(id){
+    if(!confirm('Deseja excluir este endereço?')) return;
+    try{
+      await apiFetch(`/api/enderecos/${id}`, { method: 'DELETE' });
+      await carregarMeusEnderecos();
+      renderListaEnderecosModal();
+      renderEnderecosSelect();
+      renderResumo();
+    }catch(e){
+      alert(e.message || 'Erro ao excluir endereço.');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    if(window.FirebaseAuth){
+      window.FirebaseAuth.observarEstadoAuth((usuarioState) => {
+        if(!usuarioState){
+          document.getElementById('area-auth').classList.remove('oculto');
+          document.getElementById('area-app').classList.add('oculto');
+          document.getElementById('saudacao').classList.add('oculto');
+          document.getElementById('btn-meus-enderecos').classList.add('oculto');
+          const btnAlt = document.getElementById('btn-alterar-senha');
+          if(btnAlt) btnAlt.classList.add('oculto');
+          document.getElementById('btn-sair').classList.add('oculto');
+          document.getElementById('btn-nav-minhas-reservas').classList.add('oculto');
+          mostrarAba('login');
+        } else if(!usuarioState.emailVerified){
+          document.getElementById('verificar-email-destino').textContent = usuarioState.email;
+          document.getElementById('area-auth').classList.remove('oculto');
+          document.getElementById('area-app').classList.add('oculto');
+          mostrarAba('verificar');
+        } else if(usuarioState.syncedUser){
+          usuarioLogado = usuarioState.syncedUser;
+          userToken = usuarioState.token;
+          localStorage.setItem('userToken', userToken);
+          entrarApp();
+        }
+      });
+    } else {
+      const logado = await autoLoginSeHouverToken();
+      if(!logado){
+        document.getElementById('area-auth').classList.remove('oculto');
+        document.getElementById('area-app').classList.add('oculto');
+      }
+    }
+  });
+</script>
+
+</body>
+</html>

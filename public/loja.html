@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Açaí do Parazinho — Painel da loja</title>
+<link rel="icon" href="/logoacai.png" type="image/png">
+<link rel="preload" href="/logoacai.png" as="image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --roxo-acai:#3B0A45; --roxo-fruta:#6B1F7A; --verde-mata:#1B4332;
+    --dourado:#E8A33D; --creme:#FDF6E9; --quase-preto:#180B1F;
+    --vermelho:#B04747; --radius:20px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--creme); color:var(--quase-preto); font-family:'Poppins',sans-serif; min-height:100vh; min-height:100dvh;}
+  h1,h2,h3,.display{font-family:'Fredoka',sans-serif; font-weight:700;}
+  button{font-family:'Poppins'; cursor:pointer;}
+  .oculto{display:none !important;}
+
+  header{
+    background:var(--roxo-acai); color:var(--creme); padding:18px 24px;
+    display:flex; align-items:center; justify-content:space-between;
+    position:sticky; top:0; z-index:40; border-bottom:3px solid var(--dourado); flex-wrap:wrap; gap:10px;
+  }
+  .logo{display:flex; align-items:center; gap:10px;}
+  .logo img{height:52px; width:auto; display:block; object-fit:contain;}
+  .logo-sub{font-family:'Fredoka',sans-serif; font-size:1rem; color:var(--dourado); font-weight:600;}
+  .header-acoes{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .saudacao{font-size:.85rem; color:#E9D9EE;}
+  .btn-loja, .btn-ghost{
+    background:transparent; border:1px solid rgba(255,255,255,.4); color:var(--creme);
+    padding:8px 16px; border-radius:999px; font-size:.8rem; font-weight:600;
+  }
+  .btn-loja:hover, .btn-ghost:hover{background:rgba(255,255,255,.08);}
+
+  .hero{
+    background:linear-gradient(160deg, var(--roxo-acai), var(--roxo-fruta));
+    color:var(--creme); padding:50px 24px 60px; text-align:center;
+  }
+  .hero h1{font-size:clamp(1.8rem,4vw,2.6rem); margin-bottom:10px;}
+  .hero p{color:#E9D9EE; max-width:520px; margin:0 auto;}
+
+  main{max-width:900px; margin:-30px auto 60px; padding:0 20px; position:relative; z-index:5;}
+
+  .painel{
+    background:#fff; border-radius:var(--radius); padding:28px;
+    box-shadow:0 20px 45px rgba(59,10,69,.14); margin-bottom:26px;
+  }
+  .painel h2{color:var(--roxo-acai); font-size:1.25rem; margin-bottom:4px;}
+  .painel .sub{color:#8a7a8d; font-size:.85rem; margin-bottom:20px;}
+  .passo-tag{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:26px;height:26px;border-radius:50%; background:var(--roxo-acai); color:var(--creme);
+    font-size:.8rem; font-weight:700; margin-right:8px;
+  }
+
+  /* ---------- AUTENTICAÇÃO ---------- */
+  .auth-wrap{max-width:420px; margin:50px auto; padding:0 20px;}
+  .auth-tabs{display:flex; gap:8px; margin-bottom:18px; background:#f0e2d6; border-radius:999px; padding:5px;}
+  .auth-tab{
+    flex:1; border:none; background:transparent; padding:10px; border-radius:999px;
+    font-weight:700; font-size:.88rem; color:var(--roxo-acai);
+  }
+  .auth-tab.ativo{background:var(--roxo-acai); color:var(--creme);}
+  .auth-title{color:var(--roxo-acai); font-size:1.3rem; margin-bottom:6px; text-align:center;}
+  .auth-sub{color:#8a7a8d; font-size:.85rem; text-align:center; margin-bottom:20px;}
+
+  /* produtos */
+  .produtos-lista{display:flex; flex-direction:column; gap:14px;}
+  .produto-linha{
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    border:2px solid #f0e2d6; border-radius:16px; padding:14px 16px;
+  }
+  .produto-info{display:flex; align-items:center; gap:12px;}
+  .produto-icon{
+    width:50px;height:50px;border-radius:50%;
+    background:#fff; border:2px solid #e2d2c3;
+    display:flex;align-items:center;justify-content:center;font-size:1.2rem; flex-shrink:0; overflow:hidden;
+    box-shadow:0 2px 6px rgba(0,0,0,0.08);
+  }
+  .produto-nome{font-weight:600; color:var(--roxo-acai); font-size:.95rem;}
+  .produto-preco{font-size:.8rem; color:#8a7a8d;}
+  .qtd-controle{display:flex; align-items:center; border:2px solid #eee0d4; border-radius:999px; overflow:hidden;}
+  .qtd-controle button{background:var(--creme); border:none; width:32px; height:32px; font-size:1.05rem; color:var(--roxo-acai); font-weight:700;}
+  .qtd-controle button:hover{background:#f0e2d6;}
+  .qtd-controle span{width:28px; text-align:center; font-weight:600; font-size:.9rem;}
+
+  /* datas */
+  .dias-linha{display:flex; gap:10px; overflow-x:auto; padding-bottom:6px;}
+  .dia-pill{
+    flex-shrink:0; border:2px solid #eee0d4; border-radius:14px; padding:10px 14px;
+    text-align:center; min-width:64px; background:#fff; transition:.2s ease;
+  }
+  .dia-pill .dsem{font-size:.7rem; color:#8a7a8d; text-transform:uppercase; font-weight:600;}
+  .dia-pill .dnum{font-family:'Fredoka'; font-size:1.1rem; color:var(--roxo-acai);}
+  .dia-pill.ativo{background:var(--roxo-acai); border-color:var(--roxo-acai);}
+  .dia-pill.ativo .dsem, .dia-pill.ativo .dnum{color:var(--creme);}
+
+  .horarios-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; margin-top:14px;}
+  .horario-btn{
+    border:2px solid #eee0d4; background:#fff; border-radius:12px; padding:10px 8px;
+    font-size:.83rem; font-weight:600; color:var(--roxo-acai); text-align:center;
+  }
+  .horario-btn.ativo{background:var(--verde-mata); border-color:var(--verde-mata); color:var(--creme);}
+  .horario-btn.cheio{opacity:.4; cursor:not-allowed; text-decoration:line-through;}
+  .horario-btn small{display:block; font-weight:400; font-size:.7rem; opacity:.8;}
+
+  .tipo-toggle{display:flex; gap:10px; margin-bottom:16px;}
+  .tipo-btn{
+    flex:1; border:2px solid #eee0d4; background:#fff; border-radius:14px; padding:14px 10px;
+    text-align:center; font-weight:700; font-size:.88rem; color:var(--roxo-acai);
+  }
+  .tipo-btn small{display:block; font-weight:400; font-size:.72rem; color:#8a7a8d; margin-top:2px;}
+  .tipo-btn.ativo{background:var(--roxo-acai); border-color:var(--roxo-acai); color:var(--creme);}
+  .tipo-btn.ativo small{color:#E9D9EE;}
+
+  /* endereço na reserva */
+  .endereco-select-linha{display:flex; gap:10px; align-items:stretch; margin-bottom:6px;}
+  .endereco-select-linha select{
+    flex:1; border:2px solid #eee0d4; border-radius:12px; padding:11px 14px; background:var(--creme);
+    font-family:'Poppins'; font-size:.9rem; color:var(--quase-preto);
+  }
+  .btn-gerenciar{
+    background:var(--creme); border:2px solid var(--roxo-fruta); color:var(--roxo-fruta);
+    border-radius:12px; padding:0 14px; font-weight:700; font-size:.8rem; white-space:nowrap;
+  }
+  .sem-endereco{
+    border:2px dashed #eee0d4; border-radius:14px; padding:18px; text-align:center; color:#8a7a8d; font-size:.88rem;
+  }
+
+  /* dados */
+  .campo{margin-bottom:14px;}
+  .campo label{display:block; font-size:.82rem; font-weight:600; color:var(--roxo-acai); margin-bottom:6px;}
+  .campo input, .campo textarea, .campo select{
+    width:100%; border:2px solid #eee0d4; border-radius:12px; padding:11px 14px;
+    font-family:'Poppins'; font-size:.92rem; background:var(--creme);
+  }
+  .campo input:focus, .campo textarea:focus, .campo select:focus{outline:2px solid var(--roxo-fruta); border-color:transparent;}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .campo-check{display:flex; align-items:center; gap:8px; font-size:.85rem; color:var(--roxo-acai); font-weight:600;}
+  .campo-check input{width:auto;}
+
+  .conta-info{
+    display:flex; justify-content:space-between; align-items:center;
+    border:2px solid #f0e2d6; border-radius:14px; padding:14px 16px; margin-bottom:18px; font-size:.88rem; color:#5b4a5f;
+  }
+
+  /* resumo */
+  .resumo-linha{display:flex; justify-content:space-between; font-size:.88rem; padding:6px 0; color:#5b4a5f;}
+  .resumo-total{
+    display:flex; justify-content:space-between; font-family:'Fredoka'; font-size:1.25rem;
+    color:var(--roxo-acai); border-top:2px dashed #eee0d4; margin-top:8px; padding-top:12px;
+  }
+  .msg-erro{color:var(--vermelho); font-size:.85rem; margin-top:10px; font-weight:600;}
+  .msg-ok{color:var(--verde-mata); font-size:.85rem; margin-top:10px; font-weight:600;}
+
+  .btn-confirmar, .btn-auth{
+    width:100%; background:var(--dourado); color:var(--quase-preto); border:none;
+    padding:15px; border-radius:999px; font-weight:700; font-size:.95rem; margin-top:16px;
+    box-shadow:0 8px 20px rgba(232,163,61,.28); transition:transform .2s ease;
+  }
+  .btn-confirmar:hover, .btn-auth:hover{transform:translateY(-2px);}
+  .btn-confirmar:disabled{opacity:.5; cursor:not-allowed; transform:none;}
+
+  /* ticket confirmação */
+  .ticket{
+    background:var(--roxo-acai); color:var(--creme); border-radius:var(--radius);
+    padding:30px; position:relative; overflow:hidden; text-align:center;
+  }
+  .ticket .furo{
+    position:absolute; width:28px; height:28px; background:var(--creme); border-radius:50%; top:50%; transform:translateY(-50%);
+  }
+  .ticket .furo.esq{left:-14px;} .ticket .furo.dir{right:-14px;}
+  .ticket .linha-pontilhada{border-top:2px dashed rgba(255,255,255,.3); margin:18px 0;}
+  .ticket .codigo{font-family:'Fredoka'; font-size:1.8rem; letter-spacing:2px; color:var(--dourado); margin:8px 0;}
+  .ticket .status-badge{
+    display:inline-block; background:rgba(232,163,61,.18); border:1px solid var(--dourado);
+    color:var(--dourado); padding:5px 14px; border-radius:999px; font-size:.78rem; font-weight:700; margin-bottom:14px;
+  }
+  .ticket .item-tk{display:flex; justify-content:space-between; font-size:.9rem; padding:4px 0; color:#E9D9EE;}
+  .btn-nova{
+    background:transparent; border:2px solid var(--creme); color:var(--creme);
+    padding:11px 22px; border-radius:999px; font-weight:600; margin-top:18px;
+  }
+  .btn-zap-confirma{
+    background:var(--verde-mata); color:var(--creme); border:none; padding:12px 20px;
+    border-radius:999px; font-weight:700; margin-top:10px; width:100%;
+  }
+
+  /* modais */
+  .modal-fundo{
+    position:fixed; top:0; left:0; width:100vw; height:100vh;
+    background:rgba(24,11,31,.88); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    display:flex; align-items:center; justify-content:center;
+    z-index:9999; padding:20px; overflow-y:auto;
+  }
+  .modal-caixa{
+    background:#fff; border-radius:var(--radius); padding:32px 28px; max-width:380px; width:100%; text-align:center;
+    box-shadow:0 25px 60px rgba(0,0,0,.4); border:1px solid rgba(232,163,61,.3); margin:auto; position:relative;
+  }
+  .modal-caixa.largo{max-width:460px; text-align:left;}
+  .modal-caixa h3{color:var(--roxo-acai); margin-bottom:14px; text-align:center;}
+  .modal-caixa input{
+    width:100%; border:2px solid #eee0d4; border-radius:12px; padding:12px; text-align:center;
+    font-size:1.3rem; letter-spacing:6px; margin-bottom:12px; font-family:'Fredoka';
+  }
+  .modal-btns{display:flex; gap:10px;}
+  .modal-btns button{flex:1; border:none; border-radius:999px; padding:11px; font-weight:700;}
+  .btn-entrar{background:var(--roxo-acai); color:var(--creme);}
+  .btn-cancelar-modal{background:#f0e2d6; color:var(--roxo-acai);}
+  .modal-fechar-x{
+    position:absolute; top:16px; right:20px; background:none; border:none; font-size:1.2rem; color:var(--roxo-acai); font-weight:700;
+  }
+  .endereco-item{
+    border:2px solid #f0e2d6; border-radius:14px; padding:14px 16px; margin-bottom:10px;
+    display:flex; justify-content:space-between; align-items:flex-start; gap:10px;
+  }
+  .endereco-item h5{color:var(--roxo-acai); font-size:.95rem; margin-bottom:3px;}
+  .endereco-item p{font-size:.82rem; color:#5b4a5f; line-height:1.4;}
+  .endereco-acoes{display:flex; flex-direction:column; gap:6px; align-items:flex-end;}
+  .endereco-acoes button{border:none; background:none; font-size:.76rem; font-weight:700; color:var(--roxo-fruta);}
+  .endereco-acoes .excluir{color:var(--vermelho);}
+  .tag-principal{background:#dcefe1; color:var(--verde-mata); font-size:.68rem; font-weight:700; padding:2px 8px; border-radius:999px;}
+  .btn-add-endereco{
+    width:100%; border:2px dashed var(--roxo-fruta); background:none; color:var(--roxo-fruta);
+    padding:12px; border-radius:14px; font-weight:700; font-size:.88rem; margin-top:6px;
+  }
+
+  /* ---------- abas do cliente (nova reserva / minhas reservas) ---------- */
+  .cliente-tabs{display:flex; gap:8px; margin-bottom:20px; background:#f0e2d6; border-radius:999px; padding:5px; max-width:420px;}
+  .cliente-tab{
+    flex:1; border:none; background:transparent; padding:10px; border-radius:999px;
+    font-weight:700; font-size:.85rem; color:var(--roxo-acai);
+  }
+  .cliente-tab.ativo{background:var(--roxo-acai); color:var(--creme);}
+
+  .minhas-topo{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;}
+  .minhas-stats{display:flex; gap:10px; flex-wrap:wrap;}
+  .btn-atualizar{
+    background:var(--creme); border:2px solid var(--roxo-fruta); color:var(--roxo-fruta);
+    padding:9px 16px; border-radius:999px; font-weight:700; font-size:.8rem;
+  }
+  .btn-atualizar:hover{background:#f0e2d6;}
+
+  .reserva-cliente-card{border:2px solid #f0e2d6; border-radius:16px; padding:16px 18px; margin-bottom:12px;}
+  .reserva-cliente-topo{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;}
+  .reserva-cliente-topo h4{color:var(--roxo-acai); font-size:1rem;}
+  .reserva-cliente-topo .meta{font-size:.78rem; color:#8a7a8d; margin-top:2px;}
+  .reserva-cliente-itens{font-size:.85rem; color:#5b4a5f; margin:10px 0;}
+  .reserva-cliente-acoes{display:flex; gap:8px; flex-wrap:wrap; margin-top:4px;}
+  .reserva-cliente-acoes button{border:none; border-radius:999px; padding:7px 14px; font-size:.78rem; font-weight:700;}
+  .b-ver-detalhe{background:#eee0f2; color:var(--roxo-fruta);}
+  .b-cancelar-cliente{background:#fbe0e0; color:var(--vermelho);}
+  .tag-hoje{background:#dcefe1; color:var(--verde-mata); font-size:.68rem; font-weight:700; padding:2px 8px; border-radius:999px; margin-left:6px;}
+  .vazio-lista{text-align:center; color:#8a7a8d; padding:36px 10px; font-size:.9rem;}
+  .vazio-lista .emoji-vazio{font-size:2.2rem; display:block; margin-bottom:10px;}
+
+  /* toggle mostrar senha */
+  .campo-senha-wrap{position:relative;}
+  .campo-senha-wrap input{padding-right:44px;}
+  .btn-olho{
+    position:absolute; right:6px; top:50%; transform:translateY(-50%);
+    background:none; border:none; font-size:1rem; padding:6px; color:#8a7a8d;
+  }
+
+  /* admin: filtros */
+  .admin-filtros{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;}
+  .admin-filtros input, .admin-filtros select{
+    border:2px solid #eee0d4; border-radius:12px; padding:9px 12px; font-family:'Poppins'; font-size:.85rem; background:var(--creme);
+  }
+  .admin-filtros input{flex:1; min-width:180px;}
+
+  /* admin */
+  .admin-topo{display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:10px;}
+  .admin-stats{display:flex; gap:10px; flex-wrap:wrap;}
+  .stat-card{background:var(--creme); border-radius:12px; padding:10px 16px; text-align:center; min-width:90px;}
+  .stat-card .n{font-family:'Fredoka'; font-size:1.3rem; color:var(--roxo-acai);}
+  .stat-card .l{font-size:.7rem; color:#8a7a8d;}
+  .reserva-card{border:2px solid #f0e2d6; border-radius:16px; padding:16px 18px; margin-bottom:12px;}
+  .reserva-topo{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;}
+  .reserva-topo h4{color:var(--roxo-acai); font-size:1rem;}
+  .reserva-topo .meta{font-size:.78rem; color:#8a7a8d;}
+  .badge{padding:4px 10px; border-radius:999px; font-size:.72rem; font-weight:700;}
+  .badge-pendente{background:#fdf0da; color:#a36c0a;}
+  .badge-confirmada{background:#dcefe1; color:var(--verde-mata);}
+  .badge-em_preparo{background:#eee0f2; color:var(--roxo-fruta);}
+  .badge-pronta_retirada, .badge-saiu_entrega{background:#dcefe1; color:var(--verde-mata);}
+  .badge-concluida{background:#e3dcef; color:var(--roxo-fruta);}
+  .badge-solicitacao_cancelamento{background:#fbe0e0; color:var(--vermelho);}
+  .badge-cancelada{background:#fbe0e0; color:var(--vermelho);}
+  .reserva-itens{font-size:.85rem; color:#5b4a5f; margin:10px 0;}
+  .reserva-acoes{display:flex; gap:8px; flex-wrap:wrap;}
+  .reserva-acoes button{border:none; border-radius:999px; padding:7px 14px; font-size:.78rem; font-weight:700; color:#fff;}
+  .b-confirmar{background:var(--verde-mata);}
+  .b-concluir{background:var(--roxo-fruta);}
+  .b-cancelar{background:var(--vermelho);}
+  .b-excluir{background:#8a7a8d;}
+  .vazio-admin{text-align:center; color:#8a7a8d; padding:30px 0; font-size:.9rem;}
+  .carregando{text-align:center; color:#8a7a8d; padding:20px 0; font-size:.85rem;}
+
+  /* admin: estoque */
+  .estoque-linha{
+    display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+    border:2px solid #f0e2d6; border-radius:16px; padding:14px 16px; margin-bottom:12px;
+  }
+  .estoque-campos{display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
+  .estoque-campo{text-align:center;}
+  .estoque-campo label{display:block; font-size:.68rem; color:#8a7a8d; font-weight:600; margin-bottom:4px; text-transform:uppercase;}
+  .estoque-campo input{
+    width:78px; border:2px solid #eee0d4; border-radius:10px; padding:8px; text-align:center;
+    font-family:'Poppins'; font-size:.9rem; background:var(--creme);
+  }
+  .estoque-vendido{font-size:.8rem; color:#5b4a5f;}
+  .btn-salvar-estoque{
+    background:var(--roxo-acai); color:var(--creme); border:none; border-radius:999px;
+    padding:9px 16px; font-weight:700; font-size:.8rem;
+  }
+  .tag-baixo{background:#fdf0da; color:#a36c0a; font-size:.68rem; font-weight:700; padding:2px 8px; border-radius:999px; margin-left:8px;}
+  .aviso-estoque-baixo{
+    border:2px solid #fdf0da; background:#fffaf0; border-radius:14px; padding:14px 16px; margin-bottom:18px;
+    font-size:.85rem; color:#a36c0a;
+  }
+  .aviso-estoque-baixo strong{display:block; margin-bottom:4px;}
+
+  /* admin: horários */
+  .horario-admin-linha{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    border:2px solid #f0e2d6; border-radius:14px; padding:10px 16px; margin-bottom:8px;
+  }
+  .horario-admin-linha.bloqueado{opacity:.55;}
+  .horario-admin-nome{font-weight:600; color:var(--roxo-acai); font-size:.9rem;}
+  .horario-admin-acoes{display:flex; gap:6px;}
+  .horario-admin-acoes button{border:none; border-radius:999px; padding:6px 12px; font-size:.76rem; font-weight:700;}
+  .b-bloquear{background:#fdf0da; color:#a36c0a;}
+  .b-liberar{background:#dcefe1; color:var(--verde-mata);}
+  .b-remover-horario{background:#fbe0e0; color:var(--vermelho);}
+  .add-horario-linha{display:flex; gap:10px; margin-top:8px;}
+  .add-horario-linha input{
+    flex:1; border:2px solid #eee0d4; border-radius:12px; padding:10px 14px; background:var(--creme);
+    font-family:'Poppins'; font-size:.88rem;
+  }
+  .add-horario-linha button{
+    background:var(--verde-mata); color:var(--creme); border:none; border-radius:12px;
+    padding:0 18px; font-weight:700; font-size:.85rem; white-space:nowrap;
+  }
+
+  @media (max-width:600px){
+    .grid2{grid-template-columns:1fr;}
+    .admin-topo{flex-direction:column; align-items:flex-start;}
+    .endereco-select-linha{flex-direction:column;}
+  }
+
+  /* ---------- SPLASH / ANIMAÇÃO DE ABERTURA ---------- */
+  html{background:var(--quase-preto);}
+  body.travado{overflow:hidden; height:100vh;}
+
+  #splash{
+    position:fixed; inset:0; z-index:9999;
+    background:var(--quase-preto);
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column;
+  }
+  #splash .splash-logo{
+    width:min(300px, 78vw); height:auto; display:block; object-fit:contain;
+    opacity:0; transform:scale(.4);
+    animation:splashPop .7s cubic-bezier(.2,1.6,.4,1) .15s forwards;
+    filter:drop-shadow(0 12px 32px rgba(0,0,0,.45));
+  }
+  #splash .splash-linha{
+    margin-top:22px; width:120px; height:3px; border-radius:999px;
+    background:rgba(255,255,255,.12); overflow:hidden; position:relative;
+    opacity:0; animation:splashTexto .5s ease .7s forwards;
+  }
+  #splash .splash-linha::after{
+    content:''; position:absolute; inset:0; width:40%; border-radius:999px;
+    background:linear-gradient(90deg, var(--dourado), var(--roxo-fruta));
+    animation:splashBarra 1.1s ease-in-out .9s infinite;
+  }
+
+  @keyframes splashPop{
+    0%{opacity:0; transform:scale(.4);}
+    60%{opacity:1; transform:scale(1.08);}
+    100%{opacity:1; transform:scale(1); box-shadow:0 0 0 18px rgba(232,163,61,0);}
+  }
+  @keyframes splashTexto{
+    to{opacity:1; transform:translateY(0);}
+  }
+  @keyframes splashBarra{
+    0%{left:-40%;}
+    100%{left:100%;}
+  }
+
+  #splash.saindo{
+    animation:splashSai .7s cubic-bezier(.6,0,.3,1) forwards;
+  }
+  @keyframes splashSai{
+    0%{clip-path:inset(0 0 0 0); opacity:1;}
+    100%{clip-path:inset(0 0 100% 0); opacity:1;}
+  }
+
+  #envoltorio-site{
+    opacity:0; transform:translateY(14px);
+  }
+  #envoltorio-site.revelado{
+    animation:siteRevela .7s ease forwards;
+  }
+  @keyframes siteRevela{
+    to{opacity:1; transform:translateY(0);}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    #splash, #splash *, #envoltorio-site{animation:none !important;}
+    #splash{display:none !important;}
+    #envoltorio-site{opacity:1; transform:none;}
+  }
+</style>
+</head>
+<body class="travado">
+
+<div id="splash" aria-hidden="true">
+  <img class="splash-logo" src="/logoacai.png" alt="Açaí do Parazinho">
+  <div class="splash-linha"></div>
+</div>
+
+<div id="envoltorio-site"></div>
+<script>
+  document.addEventListener('DOMContentLoaded', function(){
+    var envoltorio = document.getElementById('envoltorio-site');
+    var splash = document.getElementById('splash');
+    var no = document.body.firstChild;
+    while(no){
+      var proximo = no.nextSibling;
+      if(no !== splash && no !== envoltorio){
+        envoltorio.appendChild(no);
+      }
+      no = proximo;
+    }
+    iniciarRevelacao();
+  });
+
+  function iniciarRevelacao(){
+    var envoltorio = document.getElementById('envoltorio-site');
+    var splash = document.getElementById('splash');
+
+    function abrirSite(){
+      document.body.classList.remove('travado');
+      splash.classList.add('saindo');
+      envoltorio.classList.add('revelado');
+      setTimeout(function(){ splash.remove(); envoltorio.style.transform = 'none'; }, 750);
+    }
+
+    var pronto = false;
+    window.addEventListener('load', function(){ pronto = true; });
+    setTimeout(function(){
+      if(document.readyState === 'complete' || pronto){ abrirSite(); }
+      else{ window.addEventListener('load', abrirSite, { once:true }); }
+    }, 1100);
+  }
+</script>
+
+<header>
+  <div class="logo"><img src="/logoacai.png" alt="Açaí do Parazinho"><span class="logo-sub">— Loja</span></div>
+  <div class="header-acoes">
+    <a class="btn-ghost" href="/" style="text-decoration:none; display:inline-block;">🛍️ Área do cliente</a>
+  </div>
+</header>
+
+<!-- PAINEL ADMIN -->
+<main class="oculto" id="area-admin-wrap" style="max-width:900px; margin:30px auto 60px; padding:0 20px;">
+
+  <!-- ESTOQUE -->
+  <div class="painel">
+    <h2 style="margin-bottom:2px;">Estoque</h2>
+    <p class="sub" style="margin-bottom:14px;">Controle a quantidade disponível de cada produto.</p>
+    <div id="aviso-estoque-baixo"></div>
+    <div id="lista-estoque"><p class="carregando">Carregando estoque...</p></div>
+  </div>
+
+  <!-- HORÁRIOS DE RETIRADA -->
+  <div class="painel">
+    <h2 style="margin-bottom:2px;">Horários de retirada</h2>
+    <p class="sub" style="margin-bottom:14px;">Horários que o cliente pode escolher ao retirar na loja.</p>
+    <div id="lista-horarios-retirada"><p class="carregando">Carregando horários...</p></div>
+    <div class="add-horario-linha">
+      <input type="text" id="novo-horario-retirada" placeholder="Ex: 09:00" onkeydown="if(event.key==='Enter') adicionarHorarioAdmin('retirada');">
+      <button onclick="adicionarHorarioAdmin('retirada')">+ Adicionar</button>
+    </div>
+  </div>
+
+  <!-- HORÁRIOS DE ENTREGA -->
+  <div class="painel">
+    <h2 style="margin-bottom:2px;">Horários de entrega</h2>
+    <p class="sub" style="margin-bottom:14px;">Horários que o cliente pode escolher ao pedir entrega.</p>
+    <div id="lista-horarios-entrega"><p class="carregando">Carregando horários...</p></div>
+    <div class="add-horario-linha">
+      <input type="text" id="novo-horario-entrega" placeholder="Ex: 18:00 - 19:00" onkeydown="if(event.key==='Enter') adicionarHorarioAdmin('entrega');">
+      <button onclick="adicionarHorarioAdmin('entrega')">+ Adicionar</button>
+    </div>
+  </div>
+
+  <!-- GERENCIAMENTO DE USUÁRIOS NO BANCO -->
+  <div class="painel">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+      <div>
+        <h2 style="margin-bottom:2px;">👤 Cadastrar Usuário Direto (Sem Autenticação)</h2>
+        <p class="sub" style="margin-bottom:0;">Crie usuários ou clientes diretamente no banco de dados. Eles ficam ativos na hora.</p>
+      </div>
+      <button class="btn-atualizar" onclick="carregarUsuariosAdmin()">🔄 Atualizar Lista</button>
+    </div>
+
+    <!-- Formulário de cadastro de usuário -->
+    <form id="form-criar-usuario-loja" onsubmit="event.preventDefault(); criarUsuarioDireto();" style="background:var(--creme); border:2px solid #eee0d4; border-radius:16px; padding:18px; margin-bottom:20px;">
+      <div class="grid2">
+        <div class="campo">
+          <label for="cad-usr-nome">Nome Completo *</label>
+          <input type="text" id="cad-usr-nome" placeholder="Ex: Maria Silva" required>
+        </div>
+        <div class="campo">
+          <label for="cad-usr-telefone">Telefone / WhatsApp *</label>
+          <input type="tel" id="cad-usr-telefone" placeholder="Ex: (84) 99999-9999" required>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="campo">
+          <label for="cad-usr-email">E-mail (Opcional)</label>
+          <input type="email" id="cad-usr-email" placeholder="Ex: cliente@email.com">
+        </div>
+        <div class="campo">
+          <label for="cad-usr-senha">Senha de Acesso (Padrão: 123456)</label>
+          <input type="text" id="cad-usr-senha" placeholder="123456" value="123456">
+        </div>
+      </div>
+      <div class="grid2" style="align-items:end;">
+        <div class="campo" style="margin-bottom:0;">
+          <label for="cad-usr-tipo">Tipo de Conta</label>
+          <select id="cad-usr-tipo" style="background:#fff;">
+            <option value="CLIENTE">Cliente</option>
+            <option value="ADMIN">Administrador (Loja)</option>
+          </select>
+        </div>
+        <div>
+          <button type="submit" id="btn-cad-usr-sub" class="btn-confirmar" style="margin-top:0; padding:12px 20px; font-size:0.9rem;">
+            + Cadastrar no Banco de Dados
+          </button>
+        </div>
+      </div>
+      <div id="msg-cad-usr" style="margin-top:10px; font-size:0.88rem; font-weight:600;"></div>
+    </form>
+
+    <!-- Lista de usuários cadastrados -->
+    <h3 style="font-size:1.05rem; color:var(--roxo-acai); margin-bottom:10px;">Usuários Cadastrados no Banco</h3>
+    <div style="margin-bottom:12px;">
+      <input type="text" id="busca-usuarios-admin" placeholder="Buscar por nome, telefone ou email..." oninput="renderUsuariosAdmin()" style="width:100%; border:2px solid #eee0d4; border-radius:12px; padding:10px 14px; font-size:0.88rem; background:var(--creme);">
+    </div>
+    <div id="lista-usuarios-admin"><p class="carregando">Carregando usuários...</p></div>
+  </div>
+
+  <div class="painel">
+    <div class="admin-topo">
+      <div>
+        <h2 style="margin-bottom:2px;">Painel da loja</h2>
+        <p class="sub" style="margin-bottom:0;">Todas as reservas.</p>
+      </div>
+      <div class="admin-stats" id="admin-stats"></div>
+    </div>
+    <div class="admin-filtros">
+      <input type="text" id="admin-busca" placeholder="Buscar por nome, código ou telefone..." oninput="renderAdmin(false)">
+      <select id="admin-filtro-status" onchange="renderAdmin(false)">
+        <option value="">Todos os status</option>
+        <option value="pendente">Pendentes</option>
+        <option value="confirmada">Confirmadas</option>
+        <option value="em_preparo">Em preparo</option>
+        <option value="pronta_retirada">Prontas para retirada</option>
+        <option value="saiu_entrega">Saíram para entrega</option>
+        <option value="concluida">Concluídas</option>
+        <option value="solicitacao_cancelamento">Solicitação de cancelamento</option>
+        <option value="cancelada">Canceladas</option>
+      </select>
+      <button class="btn-atualizar" onclick="renderAdmin(true)">🔄 Atualizar</button>
+    </div>
+    <div id="admin-lista"><p class="carregando">Carregando reservas...</p></div>
+  </div>
+</main>
+
+<!-- MODAL PIN -->
+<div class="modal-fundo" id="modal-pin">
+  <div class="modal-caixa">
+    <div style="font-size:2.5rem; margin-bottom:8px;">🔐</div>
+    <h3 style="margin-bottom:8px; font-size:1.4rem; color:var(--roxo-acai);">Área Restrita da Loja</h3>
+    <p style="font-size:0.88rem; color:#6b5a6f; margin-bottom:20px; line-height:1.4;">
+      Digite a senha ou PIN de acesso da loja para continuar.
+    </p>
+    <div style="margin-bottom:14px;">
+      <input type="password" inputmode="numeric" maxlength="10" id="input-pin" placeholder="••••" autocomplete="current-password" style="font-size:1.5rem; letter-spacing:6px; text-align:center; padding:12px; border:2px solid #e2d2c3; border-radius:12px; width:100%; box-shadow:inset 0 2px 4px rgba(0,0,0,0.05);" onkeydown="if(event.key==='Enter') validarPin();">
+    </div>
+    <p class="msg-erro oculto" id="pin-erro" style="margin-bottom:14px; color:#b04747; font-weight:600; font-size:0.88rem; background:#fdf0f0; padding:8px 12px; border-radius:10px; border:1px solid #f5c6c6;">⚠️ Senha ou PIN incorreto.</p>
+    <div class="modal-btns">
+      <a class="btn-cancelar-modal" href="/" style="text-decoration:none; display:flex; align-items:center; justify-content:center;">Voltar</a>
+      <button class="btn-entrar" type="button" onclick="validarPin()">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let adminToken = sessionStorage.getItem('adminToken') || null;
+
+  async function apiFetch(path, opts = {}){
+    const headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
+    if(adminToken) headers['Authorization'] = 'Bearer ' + adminToken;
+    const res = await fetch(path, { ...opts, headers });
+    if(res.status === 401){
+      adminToken = null;
+      sessionStorage.removeItem('adminToken');
+      alert('Sua sessão expirou. Faça login novamente.');
+      location.reload();
+      throw new Error('Sessão expirada');
+    }
+    let data = null;
+    try{ data = await res.json(); }catch(e){ }
+    if(!res.ok) throw new Error((data && data.error) || 'Erro na requisição');
+    return data;
+  }
+
+  let PRODUTOS = {};
+  let todasReservas = [];
+  let todosUsuarios = [];
+  let adminCarregouUmaVez = false;
+  let horariosRetirada = [];
+  let horariosEntrega = [];
+
+  async function carregarProdutos(){
+    try{
+      const lista = await apiFetch('/api/produtos?somenteAtivos=false');
+      PRODUTOS = {};
+      lista.forEach(p => { PRODUTOS[p.id] = p; });
+    }catch(e){
+      PRODUTOS = {};
+      alert('Não deu pra carregar os produtos agora: ' + e.message);
+    }
+    return PRODUTOS;
+  }
+
+  async function carregarHorarios(tipo){
+    try{
+      const lista = await apiFetch('/api/horarios?tipo=' + encodeURIComponent(tipo));
+      if(tipo === 'retirada') horariosRetirada = lista; else horariosEntrega = lista;
+      return lista;
+    }catch(e){
+      if(tipo === 'retirada') horariosRetirada = []; else horariosEntrega = [];
+      return [];
+    }
+  }
+
+  function formatarData(d){
+    const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), dia = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${dia}`;
+  }
+  function ehHoje(dataStr){
+    const hoje = new Date();
+    return dataStr === formatarData(hoje);
+  }
+  function formatarTelefoneExibicao(t){
+    if(!t) return '';
+    const d = String(t).replace(/\D/g, '');
+    if(d.length === 11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+    if(d.length === 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+    return t;
+  }
+
+  async function validarPin(){
+    const valor = document.getElementById('input-pin').value.trim();
+    if(!valor){
+      document.getElementById('pin-erro').classList.remove('oculto');
+      return;
+    }
+    document.getElementById('pin-erro').classList.add('oculto');
+    try{
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telefone: '00000000000', senha: valor }),
+      });
+      const data = await res.json();
+      if(!res.ok || !data.tokens) throw new Error(data.error || 'Erro no login');
+      adminToken = data.tokens.access;
+      sessionStorage.setItem('adminToken', adminToken);
+    }catch(e){
+      document.getElementById('pin-erro').classList.remove('oculto');
+      return;
+    }
+
+    abrirPainelAdmin();
+  }
+
+  async function abrirPainelAdmin(){
+    document.getElementById('modal-pin').classList.add('oculto');
+    document.getElementById('area-admin-wrap').classList.remove('oculto');
+    await carregarProdutos();
+    renderEstoqueAdmin();
+    await carregarHorarios('retirada');
+    await carregarHorarios('entrega');
+    renderHorariosAdmin('retirada');
+    renderHorariosAdmin('entrega');
+    await carregarUsuariosAdmin();
+    await renderAdmin();
+  }
+
+  function obterIconeUrl(p){
+    if(p && p.imagem) return p.imagem;
+    const n = (p && p.nome ? p.nome : '').toLowerCase();
+    if(n.includes('farinha')) return '/icone-farinha.jpg';
+    if(n.includes('açaí') || n.includes('acai')) return '/icone-acai.jpg';
+    return (p && p.icone) ? p.icone : '/icone-acai.jpg';
+  }
+
+  function renderizarIconeHTML(p){
+    const url = obterIconeUrl(p);
+    if(url.startsWith('/') || url.startsWith('http') || url.includes('.')){
+      return `<img src="${url}" alt="${p.nome || 'Produto'}" style="width:100%; height:100%; object-fit:cover; display:block;">`;
+    }
+    return (p && p.icone) || '🍧';
+  }
+
+  function renderEstoqueAdmin(){
+    const cont = document.getElementById('lista-estoque');
+    const lista = Object.values(PRODUTOS);
+    if(lista.length === 0){
+      cont.innerHTML = '<p class="vazio-admin">Nenhum produto cadastrado ainda.</p>';
+    }else{
+      cont.innerHTML = lista.map(p => {
+        const baixo = p.estoque <= p.estoque_minimo;
+        return `
+        <div class="estoque-linha">
+          <div class="produto-info">
+            <div class="produto-icon">${renderizarIconeHTML(p)}</div>
+            <div>
+              <div class="produto-nome">${p.nome}${baixo ? '<span class="tag-baixo">⚠ Estoque baixo</span>' : ''}</div>
+            </div>
+          </div>
+          <div class="estoque-campos">
+            <div class="estoque-campo">
+              <label>Estoque</label>
+              <input type="number" min="0" id="estoque-qtd-${p.id}" value="${p.estoque}">
+            </div>
+            <div class="estoque-campo">
+              <label>Mínimo</label>
+              <input type="number" min="0" id="estoque-min-${p.id}" value="${p.estoque_minimo}">
+            </div>
+            <button class="btn-salvar-estoque" onclick="salvarEstoqueLinha('${p.id}')">Salvar</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    const baixos = lista.filter(p => p.estoque <= p.estoque_minimo);
+    const avisoEl = document.getElementById('aviso-estoque-baixo');
+    if(baixos.length === 0){ avisoEl.innerHTML = ''; return; }
+    avisoEl.innerHTML = `
+      <div class="aviso-estoque-baixo">
+        <strong>⚠ Estoque baixo</strong>
+        ${baixos.map(p => `${p.nome}: restam apenas ${p.estoque} unidade(s).`).join('<br>')}
+      </div>`;
+  }
+
+  async function salvarEstoqueLinha(produtoId){
+    const qtd = Math.max(0, parseInt(document.getElementById('estoque-qtd-'+produtoId).value, 10) || 0);
+    const min = Math.max(0, parseInt(document.getElementById('estoque-min-'+produtoId).value, 10) || 0);
+    try{
+      const atualizado = await apiFetch('/api/estoque/'+produtoId, {
+        method: 'PUT',
+        body: JSON.stringify({ estoque: qtd, estoque_minimo: min }),
+      });
+      PRODUTOS[produtoId] = { ...PRODUTOS[produtoId], ...atualizado };
+      renderEstoqueAdmin();
+    }catch(e){
+      alert('Não deu pra salvar o estoque agora: ' + e.message);
+    }
+  }
+
+  function renderHorariosAdmin(tipo){
+    const lista = tipo === 'retirada' ? horariosRetirada : horariosEntrega;
+    const cont = document.getElementById(tipo === 'retirada' ? 'lista-horarios-retirada' : 'lista-horarios-entrega');
+    if(lista.length === 0){
+      cont.innerHTML = '<p class="vazio-admin">Nenhum horário cadastrado ainda.</p>';
+      return;
+    }
+    cont.innerHTML = lista.map(h => `
+      <div class="horario-admin-linha ${h.bloqueado ? 'bloqueado' : ''}">
+        <span class="horario-admin-nome">${h.hora}${h.bloqueado ? ' — bloqueado' : ''}</span>
+        <div class="horario-admin-acoes">
+          ${h.bloqueado
+            ? `<button class="b-liberar" onclick="alternarBloqueioHorario('${tipo}','${h.id}')">Liberar</button>`
+            : `<button class="b-bloquear" onclick="alternarBloqueioHorario('${tipo}','${h.id}')">Bloquear</button>`}
+          <button class="b-remover-horario" onclick="removerHorarioAdmin('${tipo}','${h.id}')">Remover</button>
+        </div>
+      </div>`).join('');
+  }
+
+  async function adicionarHorarioAdmin(tipo){
+    const input = document.getElementById(tipo === 'retirada' ? 'novo-horario-retirada' : 'novo-horario-entrega');
+    const valor = input.value.trim();
+    if(!valor) return;
+    const lista = tipo === 'retirada' ? horariosRetirada : horariosEntrega;
+    if(lista.some(h => h.hora.toLowerCase() === valor.toLowerCase())){
+      alert('Esse horário já está cadastrado.');
+      return;
+    }
+    try{
+      await apiFetch('/api/horarios', { method: 'POST', body: JSON.stringify({ tipo, hora: valor }) });
+      input.value = '';
+      await carregarHorarios(tipo);
+      renderHorariosAdmin(tipo);
+    }catch(e){
+      alert('Não deu pra salvar o horário agora: ' + e.message);
+    }
+  }
+
+  async function alternarBloqueioHorario(tipo, id){
+    const lista = tipo === 'retirada' ? horariosRetirada : horariosEntrega;
+    const h = lista.find(x => x.id === id);
+    if(!h) return;
+    try{
+      await apiFetch('/api/horarios/'+id, { method: 'PUT', body: JSON.stringify({ bloqueado: !h.bloqueado }) });
+      await carregarHorarios(tipo);
+      renderHorariosAdmin(tipo);
+    }catch(e){
+      alert('Não deu pra atualizar o horário agora: ' + e.message);
+    }
+  }
+
+  async function removerHorarioAdmin(tipo, id){
+    const lista = tipo === 'retirada' ? horariosRetirada : horariosEntrega;
+    const h = lista.find(x => x.id === id);
+    if(!h) return;
+    if(!confirm(`Remover o horário "${h.hora}"?`)) return;
+    try{
+      await apiFetch('/api/horarios/'+id, { method: 'DELETE' });
+      await carregarHorarios(tipo);
+      renderHorariosAdmin(tipo);
+    }catch(e){
+      alert('Não deu pra remover o horário agora: ' + e.message);
+    }
+  }
+
+  const STATUS_LABEL = {
+    pendente:'Pendente', confirmada:'Confirmada', em_preparo:'Em preparo',
+    pronta_retirada:'Pronta para retirada', saiu_entrega:'Saiu para entrega',
+    concluida:'Concluída', solicitacao_cancelamento:'Solicitação de cancelamento', cancelada:'Cancelada'
+  };
+
+  function normalizarReserva(r){
+    return {
+      ...r,
+      itens: (r.itens || []).map(i => ({
+        qtd: i.quantidade,
+        preco: i.valorUnitario,
+        produto: (i.produto && i.produto.nome) || 'Produto removido',
+        produtoId: i.produtoId,
+      })),
+    };
+  }
+
+  async function carregarReservas(){
+    try{
+      const lista = await apiFetch('/api/reservas');
+      todasReservas = lista.map(normalizarReserva);
+    }catch(e){
+      todasReservas = [];
+      alert('Não deu pra carregar as reservas agora: ' + e.message);
+    }
+    return todasReservas;
+  }
+
+  async function renderAdmin(recarregar){
+    const cont = document.getElementById('admin-lista');
+    if(recarregar !== false || !adminCarregouUmaVez){
+      cont.innerHTML = '<p class="carregando">Carregando reservas...</p>';
+      await carregarReservas();
+      adminCarregouUmaVez = true;
+    }
+
+    const busca = (document.getElementById('admin-busca').value || '').trim().toLowerCase();
+    const filtroStatus = document.getElementById('admin-filtro-status').value;
+
+    const todasOrdenadas = [...todasReservas].sort((a,b) => (a.data+a.horario).localeCompare(b.data+b.horario));
+
+    const stats = {};
+    let totalUnidades = 0, faturamento = 0;
+    todasOrdenadas.forEach(r => {
+      stats[r.status] = (stats[r.status]||0)+1;
+      if(r.status!=='cancelada'){
+        totalUnidades += r.itens.reduce((s,i)=>s+i.qtd,0);
+        faturamento += r.total;
+      }
+    });
+    document.getElementById('admin-stats').innerHTML = `
+      <div class="stat-card"><div class="n">${todasOrdenadas.length}</div><div class="l">reservas</div></div>
+      <div class="stat-card"><div class="n">${stats.pendente||0}</div><div class="l">pendentes</div></div>
+      <div class="stat-card"><div class="n">${stats.solicitacao_cancelamento||0}</div><div class="l">solic. cancelamento</div></div>
+      <div class="stat-card"><div class="n">${totalUnidades}</div><div class="l">itens no total</div></div>
+      <div class="stat-card"><div class="n">R$ ${faturamento.toFixed(0)}</div><div class="l">em reservas ativas</div></div>
+    `;
+
+    let lista = todasOrdenadas;
+    if(filtroStatus) lista = lista.filter(r => r.status === filtroStatus);
+    if(busca){
+      lista = lista.filter(r =>
+        r.nome.toLowerCase().includes(busca) ||
+        r.codigo.toLowerCase().includes(busca) ||
+        r.telefone.toLowerCase().includes(busca)
+      );
+    }
+
+    if(todasOrdenadas.length === 0){
+      cont.innerHTML = '<p class="vazio-admin">Nenhuma reserva ainda.</p>';
+      return;
+    }
+    if(lista.length === 0){
+      cont.innerHTML = '<p class="vazio-admin">Nenhuma reserva encontrada com esse filtro.</p>';
+      return;
+    }
+
+    cont.innerHTML = lista.map(r => {
+      const [y,m,d] = r.data.split('-');
+      const itensTxt = r.itens.map(i => `${i.qtd}x ${i.produto}`).join(', ') + (r.taxaEntrega ? ` + taxa de entrega R$ ${r.taxaEntrega.toFixed(2).replace('.', ',')}` : '');
+      const tipoTxt = r.tipo === 'entrega' ? `🛵 Entrega: ${r.endereco}` : '🏪 Retirada na loja';
+      const hojeTag = ehHoje(r.data) && r.status!=='cancelada' && r.status!=='concluida' ? '<span class="tag-hoje">Hoje</span>' : '';
+
+      let acoes = '';
+      if(r.status === 'pendente'){
+        acoes = `<button class="b-confirmar" onclick="mudarStatus('${r.id}','confirmada')">Confirmar</button>
+                 <button class="b-cancelar" onclick="mudarStatus('${r.id}','cancelada')">Cancelar</button>`;
+      } else if(r.status === 'confirmada'){
+        acoes = `<button class="b-confirmar" onclick="mudarStatus('${r.id}','em_preparo')">Em preparo</button>
+                 <button class="b-cancelar" onclick="mudarStatus('${r.id}','cancelada')">Cancelar</button>`;
+      } else if(r.status === 'em_preparo'){
+        const proximo = r.tipo === 'retirada' ? 'pronta_retirada' : 'saiu_entrega';
+        const rotulo = r.tipo === 'retirada' ? 'Pronta para retirada' : 'Saiu para entrega';
+        acoes = `<button class="b-confirmar" onclick="mudarStatus('${r.id}','${proximo}')">${rotulo}</button>
+                 <button class="b-cancelar" onclick="mudarStatus('${r.id}','cancelada')">Cancelar</button>`;
+      } else if(r.status === 'pronta_retirada' || r.status === 'saiu_entrega'){
+        acoes = `<button class="b-concluir" onclick="mudarStatus('${r.id}','concluida')">Concluir</button>
+                 <button class="b-cancelar" onclick="mudarStatus('${r.id}','cancelada')">Cancelar</button>`;
+      } else if(r.status === 'solicitacao_cancelamento'){
+        acoes = `<button class="b-cancelar" onclick="aprovarCancelamento('${r.id}')">Cancelar reserva</button>
+                 <button class="b-confirmar" onclick="recusarCancelamento('${r.id}')">Manter reserva</button>`;
+      }
+
+      return `
+        <div class="reserva-card">
+          <div class="reserva-topo">
+            <div>
+              <h4>${r.nome} <span style="color:#8a7a8d; font-weight:500;">— ${r.codigo}</span> ${hojeTag}</h4>
+              <div class="meta">${d}/${m} às ${r.horario} · ${formatarTelefoneExibicao(r.telefone)}</div>
+              <div class="meta">${tipoTxt}</div>
+            </div>
+            <span class="badge badge-${r.status}">${STATUS_LABEL[r.status]}</span>
+          </div>
+          <div class="reserva-itens">${itensTxt} ${r.obs ? '· Obs: '+r.obs : ''} — <strong>R$ ${r.total.toFixed(2).replace('.', ',')}</strong></div>
+          <div class="reserva-acoes">
+            ${acoes}
+            <button class="b-excluir" onclick="excluirReserva('${r.id}')">Excluir</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  async function mudarStatus(id, novoStatus){
+    try{
+      await apiFetch('/api/reservas/'+id+'/status', {
+        method: 'PUT',
+        body: JSON.stringify({ status: novoStatus }),
+      });
+    }catch(e){
+      alert('Não deu pra atualizar o status agora: ' + e.message);
+      return;
+    }
+    await carregarProdutos();
+    renderEstoqueAdmin();
+    await renderAdmin();
+  }
+
+  async function aprovarCancelamento(id){
+    if(!confirm('Confirmar o cancelamento dessa reserva? O estoque será devolvido, se necessário.')) return;
+    await mudarStatus(id, 'cancelada');
+  }
+
+  async function recusarCancelamento(id){
+    const reserva = todasReservas.find(r => r.id === id);
+    const statusVolta = (reserva && reserva.statusAnterior) || 'pendente';
+    await mudarStatus(id, statusVolta);
+  }
+
+  async function excluirReserva(id){
+    if(!confirm('Excluir essa reserva? Essa ação não pode ser desfeita.')) return;
+    try{
+      await apiFetch('/api/reservas/'+id, { method: 'DELETE' });
+    }catch(e){
+      alert('Não deu pra excluir a reserva agora: ' + e.message);
+      return;
+    }
+    await carregarProdutos();
+    renderEstoqueAdmin();
+    await renderAdmin();
+  }
+
+  /* ---------- GERENCIAMENTO DE USUÁRIOS NO BANCO ---------- */
+  async function carregarUsuariosAdmin(){
+    const cont = document.getElementById('lista-usuarios-admin');
+    if(cont) cont.innerHTML = '<p class="carregando">Carregando usuários...</p>';
+    try{
+      const lista = await apiFetch('/api/users');
+      todosUsuarios = Array.isArray(lista) ? lista : [];
+      renderUsuariosAdmin();
+    }catch(e){
+      todosUsuarios = [];
+      if(cont) cont.innerHTML = '<p class="vazio-admin">Erro ao carregar usuários: '+e.message+'</p>';
+    }
+  }
+
+  function renderUsuariosAdmin(){
+    const cont = document.getElementById('lista-usuarios-admin');
+    if(!cont) return;
+    const busca = (document.getElementById('busca-usuarios-admin')?.value || '').trim().toLowerCase();
+
+    let lista = todosUsuarios;
+    if(busca){
+      lista = lista.filter(u =>
+        (u.nome || '').toLowerCase().includes(busca) ||
+        (u.telefone || '').toLowerCase().includes(busca) ||
+        (u.email || '').toLowerCase().includes(busca)
+      );
+    }
+
+    if(todosUsuarios.length === 0){
+      cont.innerHTML = '<p class="vazio-admin">Nenhum usuário cadastrado no banco ainda.</p>';
+      return;
+    }
+
+    if(lista.length === 0){
+      cont.innerHTML = '<p class="vazio-admin">Nenhum usuário encontrado com essa busca.</p>';
+      return;
+    }
+
+    cont.innerHTML = lista.map(u => {
+      const telFormatado = formatarTelefoneExibicao(u.telefone) || 'Sem telefone';
+      const emailTxt = u.email ? u.email : 'Sem e-mail';
+      const tipoBadge = u.tipo === 'ADMIN'
+        ? '<span class="badge" style="background:#3B0A45; color:#fff;">ADMIN</span>'
+        : '<span class="badge" style="background:#e3dcef; color:#6B1F7A;">CLIENTE</span>';
+
+      return `
+        <div class="reserva-card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div>
+            <h4 style="margin-bottom:2px;">${u.nome} ${tipoBadge}</h4>
+            <div class="meta">📞 ${telFormatado} · ✉️ ${emailTxt}</div>
+          </div>
+          <div>
+            <button class="b-excluir" onclick="excluirUsuarioAdmin('${u.id}', '${u.nome.replace(/'/g, "\\'")}')">Excluir</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function criarUsuarioDireto(){
+    const nomeEl = document.getElementById('cad-usr-nome');
+    const telEl = document.getElementById('cad-usr-telefone');
+    const emailEl = document.getElementById('cad-usr-email');
+    const senhaEl = document.getElementById('cad-usr-senha');
+    const tipoEl = document.getElementById('cad-usr-tipo');
+    const msgEl = document.getElementById('msg-cad-usr');
+    const btnSub = document.getElementById('btn-cad-usr-sub');
+
+    const nome = nomeEl.value.trim();
+    const telefone = telEl.value.trim();
+    const email = emailEl.value.trim();
+    const senha = senhaEl.value.trim() || '123456';
+    const tipo = tipoEl.value;
+
+    if(!nome || !telefone){
+      msgEl.innerHTML = '<span style="color:var(--vermelho)">⚠️ Preencha o nome e o telefone do usuário.</span>';
+      return;
+    }
+
+    btnSub.disabled = true;
+    msgEl.innerHTML = '<span style="color:#8a7a8d">Salvando diretamente no banco de dados...</span>';
+
+    try{
+      const res = await apiFetch('/api/users', {
+        method: 'POST',
+        body: JSON.stringify({ nome, telefone, email, senha, tipo }),
+      });
+
+      msgEl.innerHTML = `<span style="color:var(--verde-mata)">✅ Usuário <strong>${res.nome}</strong> cadastrado com sucesso no banco!</span>`;
+      nomeEl.value = '';
+      telEl.value = '';
+      emailEl.value = '';
+      senhaEl.value = '123456';
+
+      await carregarUsuariosAdmin();
+    }catch(e){
+      msgEl.innerHTML = `<span style="color:var(--vermelho)">❌ Erro ao cadastrar: ${e.message}</span>`;
+    }finally{
+      btnSub.disabled = false;
+    }
+  }
+
+  async function excluirUsuarioAdmin(id, nome){
+    if(!confirm(`Tem certeza que deseja excluir o usuário "${nome}" do banco de dados?`)) return;
+    try{
+      await apiFetch('/api/users/'+id, { method: 'DELETE' });
+      alert(`Usuário "${nome}" excluído com sucesso!`);
+      await carregarUsuariosAdmin();
+    }catch(e){
+      alert('Não foi possível excluir o usuário: ' + e.message);
+    }
+  }
+
+  if(adminToken){
+    abrirPainelAdmin().catch(() => {
+      document.getElementById('input-pin').focus();
+    });
+  } else {
+    document.getElementById('input-pin').focus();
+  }
+</script>
+
+</body>
+</html>
