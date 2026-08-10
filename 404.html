@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 - Página não encontrada</title>
+<style>
+  :root{
+    --roxo-escuro:#2E1437;
+    --roxo:#5B2A72;
+    --roxo-claro:#9B5DE5;
+    --rosa-acai:#F15BB5;
+    --creme:#FDF6EC;
+    --verde-folha:#4CA771;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:radial-gradient(circle at 50% 20%, var(--roxo) 0%, var(--roxo-escuro) 70%);
+    font-family:'Segoe UI', system-ui, sans-serif;
+    color:var(--creme);
+    text-align:center;
+    overflow:hidden;
+    position:relative;
+  }
+
+  .respingos{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background-image:
+      radial-gradient(circle, var(--rosa-acai) 6px, transparent 7px),
+      radial-gradient(circle, var(--roxo-claro) 4px, transparent 5px);
+    background-size: 140px 140px, 90px 90px;
+    background-position: 10% 20%, 80% 70%;
+    opacity:0.25;
+  }
+
+  .conteudo{
+    position:relative;
+    z-index:1;
+    padding:2rem;
+  }
+
+  .logo{
+    width:110px;
+    height:110px;
+    object-fit:contain;
+    margin-bottom:1.5rem;
+    filter:drop-shadow(0 8px 20px rgba(0,0,0,0.35));
+    animation:flutuar 3.5s ease-in-out infinite;
+  }
+
+  @keyframes flutuar{
+    0%,100%{transform:translateY(0);}
+    50%{transform:translateY(-10px);}
+  }
+
+  h1{
+    font-size:6rem;
+    margin:0;
+    line-height:1;
+    letter-spacing:-2px;
+    background:linear-gradient(90deg, var(--rosa-acai), var(--roxo-claro));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+
+  p.subtitulo{
+    font-size:1.25rem;
+    margin:0.75rem 0 0.25rem;
+    font-weight:600;
+  }
+
+  p.descricao{
+    font-size:1rem;
+    color:#e6d9f0;
+    max-width:340px;
+    margin:0.5rem auto 2rem;
+  }
+
+  a.botao{
+    display:inline-block;
+    padding:0.85rem 2rem;
+    border-radius:999px;
+    background:var(--verde-folha);
+    color:var(--creme);
+    text-decoration:none;
+    font-weight:600;
+    box-shadow:0 6px 18px rgba(76,167,113,0.4);
+    transition:transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  a.botao:hover{
+    transform:translateY(-2px);
+    box-shadow:0 10px 22px rgba(76,167,113,0.5);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .logo{animation:none;}
+    a.botao{transition:none;}
+  }
+</style>
+</head>
+<body>
+  <div class="respingos"></div>
+  <div class="conteudo">
+    <img src="/logoacai.png" alt="Logo Açaí" class="logo">
+    <h1>404</h1>
+    <p class="subtitulo">Essa tigela sumiu do cardápio.</p>
+    <p class="descricao">A página que você procura não existe ou foi movida. Bora voltar pro início antes que derreta.</p>
+    <a class="botao" href="/">Voltar para o início</a>
+  </div>
+</body>
+</html>
